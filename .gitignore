@@ -1,0 +1,10 @@
+target/
+.idea/
+.vscode/
+*.iml
+postgres-data/
+
+# Configurações e segredos locais
+.env
+.env.*
+!.env.example
