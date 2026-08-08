@@ -74,3 +74,5 @@ navegador para:
 - `GET /api/gmail/alerts`: listar alertas candidatos em modo somente leitura;
 - `POST /api/gmail/import`: ler o conteúdo dos alertas, extrair links de vagas do LinkedIn e persistir apenas
   as vagas ainda não cadastradas.
+- `POST /api/gmail/process`: importar vagas novas, analisá-las com a OpenAI e enviar ao Discord apenas as que
+  alcançarem `DISCORD_MINIMUM_SCORE` (70 por padrão).

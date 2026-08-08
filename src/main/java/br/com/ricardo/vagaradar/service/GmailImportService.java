@@ -8,6 +8,7 @@ import br.com.ricardo.vagaradar.integration.gmail.GmailReader;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.ArrayList;
 
 @Service
 public class GmailImportService {
@@ -25,6 +26,7 @@ public class GmailImportService {
         List<GmailJobAlert> alertas = gmailReader.buscarAlertasDetalhados(accessToken);
         int vagasImportadas = 0;
         int vagasIgnoradas = 0;
+        List<Long> vagasImportadasIds = new ArrayList<>();
 
         for (GmailJobAlert alerta : alertas) {
             List<VagaCreateRequest> vagas = parser.extrairVagas(alerta);
@@ -33,14 +35,16 @@ public class GmailImportService {
                 continue;
             }
             for (VagaCreateRequest vaga : vagas) {
-                if (vagaService.criarSeNova(vaga)) {
+                var vagaImportada = vagaService.criarSeNova(vaga);
+                if (vagaImportada.isPresent()) {
                     vagasImportadas++;
+                    vagasImportadasIds.add(vagaImportada.get().id());
                 } else {
                     vagasIgnoradas++;
                 }
             }
         }
 
-        return new GmailImportResult(alertas.size(), vagasImportadas, vagasIgnoradas);
+        return new GmailImportResult(alertas.size(), vagasImportadas, vagasIgnoradas, vagasImportadasIds);
     }
 }

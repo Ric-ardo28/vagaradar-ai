@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,12 +42,19 @@ class GmailImportServiceTest {
                 Instant.parse("2026-08-08T12:00:00Z")
         );
         given(gmailReader.buscarAlertasDetalhados("token")).willReturn(List.of(alert));
-        given(vagaService.criarSeNova(any())).willReturn(true, false);
+        given(vagaService.criarSeNova(any())).willReturn(
+                Optional.of(new br.com.ricardo.vagaradar.dto.VagaResponse(
+                        10L, null, "Desenvolvedor Java", "Empresa", "Descrição", null,
+                        br.com.ricardo.vagaradar.entity.ModeloTrabalho.NAO_INFORMADO,
+                        "https://www.linkedin.com/jobs/view/123", Instant.now(), Instant.now(),
+                        br.com.ricardo.vagaradar.entity.StatusVaga.RECEBIDA
+                ))
+        ).willReturn(Optional.empty());
         GmailImportService service = new GmailImportService(gmailReader, vagaService);
 
         GmailImportResult result = service.importarAlertas("token");
 
-        assertThat(result).isEqualTo(new GmailImportResult(1, 1, 1));
+        assertThat(result).isEqualTo(new GmailImportResult(1, 1, 1, List.of(10L)));
         ArgumentCaptor<br.com.ricardo.vagaradar.dto.VagaCreateRequest> captor = ArgumentCaptor.forClass(
                 br.com.ricardo.vagaradar.dto.VagaCreateRequest.class
         );

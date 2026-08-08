@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class VagaService {
@@ -44,12 +45,11 @@ public class VagaService {
     }
 
     @Transactional
-    public boolean criarSeNova(VagaCreateRequest request) {
+    public Optional<VagaResponse> criarSeNova(VagaCreateRequest request) {
         if (jaExiste(request)) {
-            return false;
+            return Optional.empty();
         }
-        salvar(request);
-        return true;
+        return Optional.of(paraResponse(salvar(request)));
     }
 
     private Vaga salvar(VagaCreateRequest request) {
@@ -113,6 +113,7 @@ public class VagaService {
                 resultado.recomendacao()
         );
         AnaliseVaga analiseSalva = analiseVagaRepository.save(analise);
+        vaga.marcarComoAnalisada();
         discordNotifier.notificarAnalise(vaga, analiseSalva);
         return paraAnaliseResponse(analiseSalva);
     }

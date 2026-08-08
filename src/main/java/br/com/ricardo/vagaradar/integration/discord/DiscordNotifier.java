@@ -24,7 +24,8 @@ public class DiscordNotifier {
     }
 
     public void notificarAnalise(Vaga vaga, AnaliseVaga analise) {
-        if (properties.webhookUrl() == null || properties.webhookUrl().isBlank()) {
+        if (properties.webhookUrl() == null || properties.webhookUrl().isBlank()
+                || analise.getPontuacao() < properties.minimumScore()) {
             return;
         }
 

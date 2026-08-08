@@ -36,6 +36,7 @@ openai:
 
 discord:
   webhook-url: ${DISCORD_WEBHOOK_URL:}
+  minimum-score: ${DISCORD_MINIMUM_SCORE:70}
 
 gmail:
   oauth-enabled: ${GMAIL_OAUTH_ENABLED:false}

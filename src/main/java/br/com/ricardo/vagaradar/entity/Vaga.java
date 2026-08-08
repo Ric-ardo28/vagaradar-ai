@@ -83,4 +83,8 @@ public class Vaga {
             dataEncontrada = Instant.now();
         }
     }
+
+    public void marcarComoAnalisada() {
+        this.status = StatusVaga.ANALISADA;
+    }
 }

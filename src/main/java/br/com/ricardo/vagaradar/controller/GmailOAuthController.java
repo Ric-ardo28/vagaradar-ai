@@ -4,6 +4,8 @@ import br.com.ricardo.vagaradar.integration.gmail.GmailMessageSummary;
 import br.com.ricardo.vagaradar.integration.gmail.GmailReader;
 import br.com.ricardo.vagaradar.integration.gmail.GmailImportResult;
 import br.com.ricardo.vagaradar.service.GmailImportService;
+import br.com.ricardo.vagaradar.service.GmailProcessingResult;
+import br.com.ricardo.vagaradar.service.GmailProcessingService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -22,10 +24,16 @@ public class GmailOAuthController {
 
     private final GmailReader gmailReader;
     private final GmailImportService gmailImportService;
+    private final GmailProcessingService gmailProcessingService;
 
-    public GmailOAuthController(GmailReader gmailReader, GmailImportService gmailImportService) {
+    public GmailOAuthController(
+            GmailReader gmailReader,
+            GmailImportService gmailImportService,
+            GmailProcessingService gmailProcessingService
+    ) {
         this.gmailReader = gmailReader;
         this.gmailImportService = gmailImportService;
+        this.gmailProcessingService = gmailProcessingService;
     }
 
     @GetMapping("/api/gmail/connect")
@@ -50,5 +58,12 @@ public class GmailOAuthController {
             @RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient client
     ) {
         return gmailImportService.importarAlertas(client.getAccessToken().getTokenValue());
+    }
+
+    @PostMapping("/api/gmail/process")
+    GmailProcessingResult processarAlertas(
+            @RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient client
+    ) {
+        return gmailProcessingService.processarAlertas(client.getAccessToken().getTokenValue());
     }
 }
