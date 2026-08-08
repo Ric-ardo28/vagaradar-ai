@@ -35,6 +35,7 @@ créditos da OpenAI; por isso, ela sempre exige uma confirmação no navegador.
 | GET | `/api/vagas` | Lista vagas |
 | GET | `/api/vagas/{id}` | Busca uma vaga |
 | POST | `/api/vagas/{id}/analise` | Gera e persiste a análise de compatibilidade |
+| POST | `/api/vagas/{id}/descartar` | Move uma vaga para o histórico de descartadas |
 
 Exemplo de cadastro:
 

@@ -87,4 +87,8 @@ public class Vaga {
     public void marcarComoAnalisada() {
         this.status = StatusVaga.ANALISADA;
     }
+
+    public void descartar() {
+        this.status = StatusVaga.DESCARTADA;
+    }
 }

@@ -45,4 +45,9 @@ public class VagaController {
     public AnaliseVagaResponse analisar(@PathVariable Long id) {
         return vagaService.analisar(id);
     }
+
+    @PostMapping("/{id}/descartar")
+    public VagaResponse descartar(@PathVariable Long id) {
+        return vagaService.descartar(id);
+    }
 }

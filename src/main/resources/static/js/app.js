@@ -3,8 +3,11 @@ const elements = {
   total: document.querySelector('#total-count'), analyzed: document.querySelector('#analyzed-count'),
   waiting: document.querySelector('#new-count'), refresh: document.querySelector('#refresh-button'),
   gmail: document.querySelector('#gmail-button'), process: document.querySelector('#process-button'),
-  dialog: document.querySelector('#analysis-dialog'), analysis: document.querySelector('#analysis-content')
+  dialog: document.querySelector('#analysis-dialog'), analysis: document.querySelector('#analysis-content'),
+  search: document.querySelector('#search-filter'), workModel: document.querySelector('#work-model-filter'),
+  vacancyStatus: document.querySelector('#status-filter'), score: document.querySelector('#score-filter')
 };
+let allVacancies = [];
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#039;', '"':'&quot;' }[char]));
 const statusLabel = status => ({ RECEBIDA:'Aguardando análise', ANALISADA:'Analisada', DESCARTADA:'Descartada' }[status] ?? status);
@@ -27,7 +30,6 @@ function updateStats(vacancies) {
 }
 
 function renderVacancies(vacancies) {
-  updateStats(vacancies);
   if (!vacancies.length) {
     elements.vacancies.replaceChildren(document.querySelector('#empty-state-template').content.cloneNode(true));
     return;
@@ -41,17 +43,32 @@ function renderVacancies(vacancies) {
       </div>
       <div class="vacancy-actions">
         <span class="badge badge-${vacancy.status.toLowerCase()}">${statusLabel(vacancy.status)}</span>
+        ${vacancy.pontuacao == null ? '' : `<span class="badge score-pill">${vacancy.pontuacao}/100</span>`}
         <button class="analyze-button" data-vacancy-id="${vacancy.id}" type="button">${vacancy.status === 'ANALISADA' ? 'Ver análise' : 'Analisar'}</button>
+        ${vacancy.status === 'DESCARTADA' ? '' : `<button class="discard-button" data-discard-id="${vacancy.id}" type="button">Descartar</button>`}
       </div>
     </article>`).join('');
+}
+
+function applyFilters() {
+  const term = elements.search.value.trim().toLocaleLowerCase('pt-BR');
+  const score = Number(elements.score.value || 0);
+  const filtered = allVacancies.filter(vacancy =>
+    (!term || `${vacancy.cargo} ${vacancy.empresa}`.toLocaleLowerCase('pt-BR').includes(term)) &&
+    (!elements.workModel.value || vacancy.modeloTrabalho === elements.workModel.value) &&
+    (!elements.vacancyStatus.value || vacancy.status === elements.vacancyStatus.value) &&
+    (!score || (vacancy.pontuacao != null && vacancy.pontuacao >= score))
+  );
+  renderVacancies(filtered);
+  elements.status.textContent = `${filtered.length} de ${allVacancies.length} vaga(s) exibida(s).`;
 }
 
 async function loadVacancies() {
   elements.status.textContent = 'Atualizando...';
   try {
-    const vacancies = await request('/api/vagas');
-    renderVacancies(vacancies);
-    elements.status.textContent = `${vacancies.length} vaga${vacancies.length === 1 ? '' : 's'} carregada${vacancies.length === 1 ? '' : 's'}.`;
+    allVacancies = await request('/api/vagas');
+    updateStats(allVacancies);
+    applyFilters();
   } catch (error) {
     elements.status.textContent = error.message;
     elements.status.classList.add('error');
@@ -70,6 +87,16 @@ function showAnalysis(analysis) {
 }
 
 elements.vacancies.addEventListener('click', async event => {
+  const discardButton = event.target.closest('[data-discard-id]');
+  if (discardButton) {
+    if (!window.confirm('Descartar esta vaga? Ela continuará no histórico, mas não será considerada pendente.')) return;
+    discardButton.disabled = true;
+    try {
+      await request(`/api/vagas/${discardButton.dataset.discardId}/descartar`, { method:'POST' });
+      await loadVacancies();
+    } catch (error) { elements.status.textContent = error.message; elements.status.classList.add('error'); }
+    return;
+  }
   const button = event.target.closest('[data-vacancy-id]');
   if (!button) return;
   button.disabled = true;
@@ -100,5 +127,8 @@ elements.process.addEventListener('click', async () => {
 });
 
 elements.refresh.addEventListener('click', loadVacancies);
+for (const filter of [elements.search, elements.workModel, elements.vacancyStatus, elements.score]) {
+  filter.addEventListener(filter === elements.search ? 'input' : 'change', applyFilters);
+}
 document.querySelector('#dialog-close').addEventListener('click', () => elements.dialog.close());
 loadVacancies();

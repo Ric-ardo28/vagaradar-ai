@@ -100,6 +100,14 @@ public class VagaService {
                 .orElseGet(() -> criarAnalise(id));
     }
 
+    @Transactional
+    public VagaResponse descartar(Long id) {
+        Vaga vaga = vagaRepository.findById(id)
+                .orElseThrow(() -> new VagaNaoEncontradaException(id));
+        vaga.descartar();
+        return paraResponse(vaga);
+    }
+
     private AnaliseVagaResponse criarAnalise(Long id) {
         Vaga vaga = vagaRepository.findById(id)
                 .orElseThrow(() -> new VagaNaoEncontradaException(id));
@@ -119,6 +127,9 @@ public class VagaService {
     }
 
     private VagaResponse paraResponse(Vaga vaga) {
+        Integer pontuacao = analiseVagaRepository.findByVagaId(vaga.getId())
+                .map(AnaliseVaga::getPontuacao)
+                .orElse(null);
         return new VagaResponse(
                 vaga.getId(),
                 vaga.getLinkedinId(),
@@ -130,7 +141,8 @@ public class VagaService {
                 vaga.getLink(),
                 vaga.getDataPublicacao(),
                 vaga.getDataEncontrada(),
-                vaga.getStatus()
+                vaga.getStatus(),
+                pontuacao
         );
     }
 

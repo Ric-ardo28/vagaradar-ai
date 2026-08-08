@@ -36,7 +36,7 @@ class VagaControllerTest {
         VagaResponse vaga = new VagaResponse(
                 1L, "abc123", "Desenvolvedor Java", "Empresa X", "Java e Spring Boot",
                 "São Paulo", ModeloTrabalho.HIBRIDO, "https://www.linkedin.com/jobs/view/123",
-                Instant.parse("2026-08-07T12:00:00Z"), Instant.parse("2026-08-07T13:00:00Z"), StatusVaga.RECEBIDA
+                Instant.parse("2026-08-07T12:00:00Z"), Instant.parse("2026-08-07T13:00:00Z"), StatusVaga.RECEBIDA, null
         );
         given(vagaService.listar()).willReturn(List.of(vaga));
 
@@ -79,5 +79,19 @@ class VagaControllerTest {
                                 """))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("Esta vaga já foi cadastrada."));
+    }
+
+    @Test
+    void deveDescartarVaga() throws Exception {
+        VagaResponse descartada = new VagaResponse(
+                1L, "abc123", "Desenvolvedor Java", "Empresa X", "Java e Spring Boot",
+                "São Paulo", ModeloTrabalho.HIBRIDO, "https://www.linkedin.com/jobs/view/123",
+                null, Instant.parse("2026-08-07T13:00:00Z"), StatusVaga.DESCARTADA, null
+        );
+        given(vagaService.descartar(1L)).willReturn(descartada);
+
+        mockMvc.perform(post("/api/vagas/1/descartar"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("DESCARTADA"));
     }
 }
