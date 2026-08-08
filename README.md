@@ -116,6 +116,15 @@ sem Docker, eles são ignorados; os testes unitários continuam sendo executados
 O serviço PostgreSQL não deve ter porta exposta publicamente em produção. Mantenha-o acessível apenas pela rede interna
 dos containers e restrinja o acesso administrativo ao banco, pois ele contém os tokens OAuth persistidos.
 
+### Deploy gratuito na Koyeb
+
+Para uso pessoal, o projeto pode ser publicado com uma instância web gratuita e PostgreSQL gratuito na Koyeb. O guia
+completo está em [docs/DEPLOY_KOYEB.md](docs/DEPLOY_KOYEB.md). A aplicação respeita automaticamente a variável `PORT`
+fornecida pela plataforma e deve usar `SESSION_COOKIE_SECURE=true` em produção.
+
+O plano gratuito entra em repouso após uma hora sem tráfego, portanto não é adequado para garantir a execução do
+agendador do Gmail. Mantenha `GMAIL_SCHEDULER_ENABLED=false` e importe as vagas manualmente pelo painel.
+
 ## Integrações
 
 - OpenAI: obrigatória apenas para gerar análises; usa `OPENAI_API_KEY`.

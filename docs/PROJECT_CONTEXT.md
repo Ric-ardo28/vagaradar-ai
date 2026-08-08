@@ -35,6 +35,7 @@ sobreposição personalizada no PostgreSQL ou removê-la para restaurar o padrã
    falta apenas escolher uma plataforma antes de uma publicação real.
 10. Segurança de acesso pessoal: login de administrador, proteção CSRF, sessão e cabeçalhos de segurança. Concluída.
 11. Perfil profissional editável: perfil-base fixo no código, personalização opcional persistida e restauração do padrão. Concluída.
+12. Preparação para deploy gratuito: compatibilidade com porta da plataforma e guia de publicação na Koyeb. Concluída.
 
 As fases poderão ser ajustadas conforme as decisões do desenvolvimento.
 
