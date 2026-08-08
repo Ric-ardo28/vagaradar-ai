@@ -24,7 +24,9 @@ import static org.assertj.core.api.Assertions.assertThat;
                 "gmail.oauth-enabled=false",
                 "gmail.scheduler.enabled=false",
                 "openai.api-key=",
-                "discord.webhook-url="
+                "discord.webhook-url=",
+                "app.security.admin-username=test-admin",
+                "app.security.admin-password=test-password-123"
         }
 )
 class VagaRadarPostgresIntegrationTest {

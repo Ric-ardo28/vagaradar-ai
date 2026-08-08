@@ -13,6 +13,8 @@ import java.util.regex.Pattern;
 
 public class GmailJobAlertParser {
 
+    private static final int MAX_DESCRIPTION_LENGTH = 8_000;
+
     private static final Pattern ANCHOR_PATTERN = Pattern.compile(
             "<a\\b[^>]*?href\\s*=\\s*[\\\"'](?<url>[^\\\"']+)[\\\"'][^>]*>(?<label>.*?)</a>",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL
@@ -105,7 +107,7 @@ public class GmailJobAlertParser {
             corpo = "Alerta de vaga recebido pelo Gmail.";
         }
 
-        return limitar("Alerta do LinkedIn: " + corpo, 20_000);
+        return limitar("Alerta do LinkedIn: " + corpo, MAX_DESCRIPTION_LENGTH);
     }
 
     private String limparTexto(String value) {

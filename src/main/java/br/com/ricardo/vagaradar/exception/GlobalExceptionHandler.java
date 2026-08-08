@@ -87,6 +87,11 @@ public class GlobalExceptionHandler {
         return response(HttpStatus.BAD_GATEWAY, exception.getMessage(), request, Map.of());
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiErrorResponse> handleUnexpectedException(HttpServletRequest request) {
+        return response(HttpStatus.INTERNAL_SERVER_ERROR, "Ocorreu um erro interno.", request, Map.of());
+    }
+
     private ResponseEntity<ApiErrorResponse> response(
             HttpStatus status,
             String message,

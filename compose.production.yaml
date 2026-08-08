@@ -1,0 +1,7 @@
+services:
+  postgres:
+    ports: !reset []
+
+  app:
+    environment:
+      SESSION_COOKIE_SECURE: "true"

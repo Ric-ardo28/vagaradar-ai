@@ -11,7 +11,7 @@ public record VagaCreateRequest(
         @Size(max = 100) String linkedinId,
         @NotBlank @Size(max = 255) String cargo,
         @NotBlank @Size(max = 255) String empresa,
-        @NotBlank String descricao,
+        @NotBlank @Size(max = 8000) String descricao,
         @Size(max = 255) String localizacao,
         ModeloTrabalho modeloTrabalho,
         @NotBlank @Size(max = 2048) @URL String link,

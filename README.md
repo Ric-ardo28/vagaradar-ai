@@ -16,6 +16,9 @@ exibe o status de análise e permite iniciar a conexão Gmail ou a importação 
 
 Copie `.env.example` para `.env.local` e preencha os valores necessários. O `.env.local` é carregado localmente e não é versionado.
 
+Além das integrações, defina `APP_ADMIN_USERNAME` e `APP_ADMIN_PASSWORD`. A senha deve ter pelo menos 12 caracteres,
+ficar somente no ambiente local ou no gerenciador de segredos da plataforma e nunca ser incluída no Git.
+
 ## Executar localmente
 
 ```bash
@@ -26,6 +29,14 @@ As migrações do banco são executadas automaticamente pelo Flyway.
 
 Depois de iniciar, abra `http://localhost:8080/` para acessar o painel. A ação **Importar e analisar** pode consumir
 créditos da OpenAI; por isso, ela sempre exige uma confirmação no navegador.
+
+## Acesso e segurança
+
+O painel e todas as rotas de negócio exigem login em `http://localhost:8080/login`. A aplicação protege ações de
+escrita com CSRF e mantém a sessão por 8 horas, por padrão. O endpoint `GET /actuator/health` é a única rota pública,
+para uso por verificações de saúde da infraestrutura.
+
+Após entrar no painel, use **Conectar Gmail** para iniciar o OAuth. O navegador retorna ao painel depois do consentimento.
 
 ## Endpoints
 
@@ -66,6 +77,13 @@ com uma instalação local do PostgreSQL que use a porta padrão `5432`.
 
 O PostgreSQL ficará disponível no serviço `postgres`; a aplicação aguarda a verificação de saúde do banco antes de iniciar.
 
+Para produção, aplique também a composição de produção. Ela remove a exposição da porta do PostgreSQL e marca o cookie
+de sessão como seguro; publique a aplicação atrás de HTTPS.
+
+```bash
+docker compose -f compose.yaml -f compose.production.yaml up -d --build
+```
+
 ## Health check e deploy
 
 O health check público fica em `GET /actuator/health`. Ele é usado pelo Docker e pode ser configurado pela
@@ -77,12 +95,16 @@ Antes de publicar, configure na plataforma as mesmas variáveis de `.env.example
 - `OPENAI_API_KEY` e, opcionalmente, `DISCORD_WEBHOOK_URL`;
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` e `GMAIL_OAUTH_ENABLED=true` se for usar Gmail;
 - `GMAIL_SCHEDULER_ENABLED=false` inicialmente. Ative-o somente após validar custos e permissões.
+- `APP_ADMIN_USERNAME` e `APP_ADMIN_PASSWORD` em um gerenciador de segredos; use `SESSION_COOKIE_SECURE=true` sob HTTPS.
 
 Em produção, inclua a URL pública no URI de redirecionamento do cliente OAuth do Google. Exemplo:
 `https://seu-dominio.com/login/oauth2/code/google`.
 
 Os testes de integração usam Testcontainers com PostgreSQL 16 quando o Docker Engine está disponível. Em ambientes
 sem Docker, eles são ignorados; os testes unitários continuam sendo executados normalmente.
+
+O serviço PostgreSQL não deve ter porta exposta publicamente em produção. Mantenha-o acessível apenas pela rede interna
+dos containers e restrinja o acesso administrativo ao banco, pois ele contém os tokens OAuth persistidos.
 
 ## Integrações
 

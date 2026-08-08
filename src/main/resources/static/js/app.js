@@ -12,9 +12,13 @@ let allVacancies = [];
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#039;', '"':'&quot;' }[char]));
 const statusLabel = status => ({ RECEBIDA:'Aguardando análise', ANALISADA:'Analisada', DESCARTADA:'Descartada' }[status] ?? status);
 const formatWorkModel = model => ({ REMOTO:'Remoto', HIBRIDO:'Híbrido', PRESENCIAL:'Presencial', NAO_INFORMADO:'Modelo não informado' }[model] ?? 'Modelo não informado');
+const csrfToken = () => document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=').slice(1).join('=');
 
 async function request(url, options = {}) {
-  const response = await fetch(url, { ...options, headers: { Accept:'application/json', ...(options.headers || {}) } });
+  const method = (options.method || 'GET').toUpperCase();
+  const csrfHeaders = ['GET', 'HEAD', 'OPTIONS'].includes(method) || !csrfToken()
+    ? {} : { 'X-XSRF-TOKEN': decodeURIComponent(csrfToken()) };
+  const response = await fetch(url, { ...options, headers: { Accept:'application/json', ...csrfHeaders, ...(options.headers || {}) } });
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
     throw new Error(error.message || `Não foi possível concluir a operação (${response.status}).`);

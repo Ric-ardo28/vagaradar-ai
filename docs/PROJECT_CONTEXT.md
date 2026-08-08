@@ -17,6 +17,7 @@ um navegador aberto.
 
 O agendamento está implementado, porém permanece desativado por padrão através de `GMAIL_SCHEDULER_ENABLED=false`.
 Há testes para fluxos HTTP, importação, processamento e arquivos Docker para executar a aplicação com PostgreSQL.
+O painel agora requer autenticação de administrador por variáveis de ambiente; ações de escrita usam CSRF.
 
 ## Roadmap incremental
 
@@ -30,6 +31,7 @@ Há testes para fluxos HTTP, importação, processamento e arquivos Docker para 
 8. Prevenção de duplicidade, automação agendada e refinamentos.
 9. Testes de integração, documentação e preparação para deploy. Em andamento: health check e Testcontainers foram adicionados;
    falta apenas escolher uma plataforma antes de uma publicação real.
+10. Segurança de acesso pessoal: login de administrador, proteção CSRF, sessão e cabeçalhos de segurança. Concluída.
 
 As fases poderão ser ajustadas conforme as decisões do desenvolvimento.
 
@@ -50,6 +52,8 @@ As fases poderão ser ajustadas conforme as decisões do desenvolvimento.
 - Futuras chaves, como `OPENAI_API_KEY`, webhook do Discord e credenciais do Gmail, também deverão vir do ambiente.
 - Não registrar tokens, senhas, conteúdo sensível de e-mails ou dados pessoais em logs. Tokens OAuth persistidos
   no banco exigem acesso restrito ao banco e criptografia de disco ou de dados em ambientes de produção.
+- A senha do administrador vem de `APP_ADMIN_PASSWORD`, com no mínimo 12 caracteres. Em produção, usar HTTPS e
+  `SESSION_COOKIE_SECURE=true`; o banco não deve expor uma porta pública.
 
 ## Integrações futuras
 
