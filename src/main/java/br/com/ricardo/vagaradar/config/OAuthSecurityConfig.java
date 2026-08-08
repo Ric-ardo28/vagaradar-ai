@@ -17,8 +17,10 @@ public class OAuthSecurityConfig {
     @Bean
     SecurityFilterChain oauthSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/gmail/import"))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/gmail/**", "/oauth2/**", "/login/**").permitAll()
+                        .requestMatchers("/api/gmail/connect", "/oauth2/**", "/login/**").permitAll()
+                        .requestMatchers("/api/gmail/alerts", "/api/gmail/import", "/api/gmail/connected").authenticated()
                         .anyRequest().permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/api/gmail/connected", true))
