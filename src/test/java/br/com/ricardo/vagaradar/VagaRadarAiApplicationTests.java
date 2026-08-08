@@ -12,7 +12,8 @@ import br.com.ricardo.vagaradar.integration.discord.DiscordNotifier;
 @SpringBootTest(properties = {
         "spring.autoconfigure.exclude="
                 + "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,"
-                + "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration"
+                + "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration",
+        "gmail.oauth-enabled=false"
 })
 class VagaRadarAiApplicationTests {
 

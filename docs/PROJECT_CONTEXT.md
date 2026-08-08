@@ -10,11 +10,13 @@ O perfil-base para a análise inclui Java, Spring Boot, APIs REST, JPA/Hibernate
 
 ## Estado atual
 
-**Fase 8 — prevenção de duplicidade** está concluída: vagas com o mesmo link ou identificador LinkedIn não podem ser cadastradas novamente. A proteção acontece no serviço e no banco de dados.
+As fases de Gmail, OpenAI, Discord e prevenção de duplicidade estão concluídas. O backend lê alertas do Gmail,
+importa vagas inéditas, analisa somente as novas com OpenAI e envia ao Discord as compatibilidades acima do limite
+configurado. O cliente OAuth do Google é persistido no PostgreSQL para permitir renovação de token e automação sem
+um navegador aberto.
 
-**Fase 7 — Gmail** permanece pendente: para leitura automática pelo backend serão necessárias credenciais OAuth próprias do Google. O conector de Gmail do Codex não substitui essa autorização da aplicação.
-
-**Fase 9 — qualidade e preparação para deploy** está concluída: há testes para os fluxos HTTP principais, documentação de uso, exemplo seguro de variáveis e arquivos Docker para executar a aplicação com PostgreSQL.
+O agendamento está implementado, porém permanece desativado por padrão através de `GMAIL_SCHEDULER_ENABLED=false`.
+Há testes para fluxos HTTP, importação, processamento e arquivos Docker para executar a aplicação com PostgreSQL.
 
 ## Roadmap incremental
 
@@ -25,7 +27,7 @@ O perfil-base para a análise inclui Java, Spring Boot, APIs REST, JPA/Hibernate
 5. Integração futura com OpenAI para análise e pontuação.
 6. Integração futura com Discord para alertas.
 7. Integração futura com Gmail ou outra fonte de alertas de vaga.
-8. Prevenção de duplicidade, agendamento e refinamentos.
+8. Prevenção de duplicidade, automação agendada e refinamentos.
 9. Testes de integração, documentação e preparação para deploy.
 
 As fases poderão ser ajustadas conforme as decisões do desenvolvimento.
@@ -45,7 +47,8 @@ As fases poderão ser ajustadas conforme as decisões do desenvolvimento.
 - Segredos e configurações específicas de ambiente devem ser fornecidos por variáveis de ambiente ou mecanismos equivalentes; nunca devem ser versionados.
 - O projeto já espera `DATABASE_URL`, `DATABASE_USERNAME` e `DATABASE_PASSWORD` para execução com PostgreSQL.
 - Futuras chaves, como `OPENAI_API_KEY`, webhook do Discord e credenciais do Gmail, também deverão vir do ambiente.
-- Não registrar tokens, senhas, conteúdo sensível de e-mails ou dados pessoais em logs.
+- Não registrar tokens, senhas, conteúdo sensível de e-mails ou dados pessoais em logs. Tokens OAuth persistidos
+  no banco exigem acesso restrito ao banco e criptografia de disco ou de dados em ambientes de produção.
 
 ## Integrações futuras
 

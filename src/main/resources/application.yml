@@ -40,3 +40,7 @@ discord:
 
 gmail:
   oauth-enabled: ${GMAIL_OAUTH_ENABLED:false}
+  scheduler:
+    enabled: ${GMAIL_SCHEDULER_ENABLED:false}
+    fixed-delay: ${GMAIL_SCHEDULER_FIXED_DELAY:PT6H}
+    initial-delay: ${GMAIL_SCHEDULER_INITIAL_DELAY:PT5M}

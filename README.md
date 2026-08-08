@@ -76,3 +76,17 @@ navegador para:
   as vagas ainda não cadastradas.
 - `POST /api/gmail/process`: importar vagas novas, analisá-las com a OpenAI e enviar ao Discord apenas as que
   alcançarem `DISCORD_MINIMUM_SCORE` (70 por padrão).
+
+## Automação agendada
+
+Depois da primeira autorização, o cliente OAuth do Google é persistido no PostgreSQL para que o backend possa
+renovar o acesso ao Gmail. Para habilitar a execução automática, configure localmente:
+
+```properties
+GMAIL_SCHEDULER_ENABLED=true
+GMAIL_SCHEDULER_FIXED_DELAY=PT6H
+GMAIL_SCHEDULER_INITIAL_DELAY=PT5M
+```
+
+O ciclo fica desativado por padrão, pois pode consumir créditos da OpenAI. Os tokens OAuth são dados sensíveis:
+não os versionar, não os registrar em logs e usar um banco de dados protegido em ambientes de produção.
