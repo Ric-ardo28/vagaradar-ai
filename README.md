@@ -53,6 +53,10 @@ Com as variáveis configuradas, execute:
 docker compose up --build
 ```
 
+Para executar o backend pelo Maven e o banco pelo Docker, inicie somente o PostgreSQL com
+`docker compose up -d postgres`. Ele fica disponível em `localhost:5433`, evitando conflito
+com uma instalação local do PostgreSQL que use a porta padrão `5432`.
+
 O PostgreSQL ficará disponível no serviço `postgres`; a aplicação aguarda a verificação de saúde do banco antes de iniciar.
 
 ## Integrações

@@ -4,7 +4,7 @@ spring:
   config:
     import: optional:file:.env.local[.properties]
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/vagaradar}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/vagaradar}
     username: ${DATABASE_USERNAME:vagaradar}
     password: ${DATABASE_PASSWORD:vagaradar}
   jpa:
