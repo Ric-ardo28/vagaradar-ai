@@ -18,6 +18,8 @@ um navegador aberto.
 O agendamento está implementado, porém permanece desativado por padrão através de `GMAIL_SCHEDULER_ENABLED=false`.
 Há testes para fluxos HTTP, importação, processamento e arquivos Docker para executar a aplicação com PostgreSQL.
 O painel agora requer autenticação de administrador por variáveis de ambiente; ações de escrita usam CSRF.
+O perfil-base continua fixo no código para preservar o direcionamento pessoal do projeto. O painel permite salvar uma
+sobreposição personalizada no PostgreSQL ou removê-la para restaurar o padrão; cada nova análise utiliza a versão ativa.
 
 ## Roadmap incremental
 
@@ -32,6 +34,7 @@ O painel agora requer autenticação de administrador por variáveis de ambiente
 9. Testes de integração, documentação e preparação para deploy. Em andamento: health check e Testcontainers foram adicionados;
    falta apenas escolher uma plataforma antes de uma publicação real.
 10. Segurança de acesso pessoal: login de administrador, proteção CSRF, sessão e cabeçalhos de segurança. Concluída.
+11. Perfil profissional editável: perfil-base fixo no código, personalização opcional persistida e restauração do padrão. Concluída.
 
 As fases poderão ser ajustadas conforme as decisões do desenvolvimento.
 

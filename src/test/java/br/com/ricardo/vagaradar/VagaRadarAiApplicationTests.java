@@ -9,6 +9,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import br.com.ricardo.vagaradar.repository.VagaRepository;
 import br.com.ricardo.vagaradar.repository.AnaliseVagaRepository;
+import br.com.ricardo.vagaradar.repository.PerfilProfissionalRepository;
 import br.com.ricardo.vagaradar.integration.openai.OpenAiVagaAnalyzer;
 import br.com.ricardo.vagaradar.integration.discord.DiscordNotifier;
 
@@ -39,6 +40,9 @@ class VagaRadarAiApplicationTests {
 
     @MockitoBean
     private AnaliseVagaRepository analiseVagaRepository;
+
+    @MockitoBean
+    private PerfilProfissionalRepository perfilProfissionalRepository;
 
     @MockitoBean
     private OpenAiVagaAnalyzer openAiVagaAnalyzer;

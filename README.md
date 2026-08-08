@@ -38,6 +38,13 @@ para uso por verificações de saúde da infraestrutura.
 
 Após entrar no painel, use **Conectar Gmail** para iniciar o OAuth. O navegador retorna ao painel depois do consentimento.
 
+## Perfil profissional
+
+O projeto mantém um perfil-base fixo no código, voltado a Java, Spring Boot e desenvolvimento backend júnior.
+No painel, use **Meu perfil** para criar uma versão personalizada. Essa versão fica no PostgreSQL e será usada nas
+próximas análises. A opção **Restaurar padrão** remove somente a personalização e volta imediatamente ao perfil-base
+do código.
+
 ## Endpoints
 
 | Método | Rota | Descrição |
@@ -47,6 +54,9 @@ Após entrar no painel, use **Conectar Gmail** para iniciar o OAuth. O navegador
 | GET | `/api/vagas/{id}` | Busca uma vaga |
 | POST | `/api/vagas/{id}/analise` | Gera e persiste a análise de compatibilidade |
 | POST | `/api/vagas/{id}/descartar` | Move uma vaga para o histórico de descartadas |
+| GET | `/api/perfil` | Retorna o perfil-base ou a versão personalizada ativa |
+| PUT | `/api/perfil` | Salva a versão personalizada do perfil |
+| DELETE | `/api/perfil` | Remove a personalização e restaura o perfil-base |
 
 Exemplo de cadastro:
 

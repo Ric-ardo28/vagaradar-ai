@@ -13,7 +13,10 @@
       <span class="brand-mark">VR</span>
       <span>VagaRadar <strong>AI</strong></span>
     </a>
-    <button class="button button-secondary" id="refresh-button" type="button">Atualizar vagas</button>
+    <div class="topbar-actions">
+      <button class="button button-secondary" id="profile-button" type="button">Meu perfil</button>
+      <button class="button button-secondary" id="refresh-button" type="button">Atualizar vagas</button>
+    </div>
   </header>
 
   <main class="page-content">
@@ -56,6 +59,26 @@
   <dialog id="analysis-dialog" class="analysis-dialog">
     <button id="dialog-close" class="dialog-close" type="button" aria-label="Fechar">×</button>
     <div id="analysis-content"></div>
+  </dialog>
+
+  <dialog id="profile-dialog" class="profile-dialog">
+    <button id="profile-dialog-close" class="dialog-close" type="button" aria-label="Fechar">×</button>
+    <p class="eyebrow">PERFIL PROFISSIONAL</p>
+    <h2>Perfil usado nas análises</h2>
+    <p id="profile-mode" class="profile-mode" role="status"></p>
+    <form id="profile-form" class="profile-form">
+      <label>Objetivo<textarea id="profile-objetivo" required maxlength="3000"></textarea></label>
+      <label>Stack principal<textarea id="profile-stack-principal" required maxlength="3000"></textarea></label>
+      <label>Conhecimentos básicos<textarea id="profile-conhecimentos-basicos" required maxlength="3000"></textarea></label>
+      <label>Formação<textarea id="profile-formacao" required maxlength="3000"></textarea></label>
+      <label>Experiência<textarea id="profile-experiencia" required maxlength="3000"></textarea></label>
+      <label>Preferências<textarea id="profile-preferencias" required maxlength="3000"></textarea></label>
+      <p id="profile-error" class="profile-error" role="alert"></p>
+      <div class="profile-actions">
+        <button class="button button-secondary" id="profile-reset" type="button">Restaurar padrão</button>
+        <button class="button button-dark" type="submit">Salvar perfil</button>
+      </div>
+    </form>
   </dialog>
 
   <template id="empty-state-template">

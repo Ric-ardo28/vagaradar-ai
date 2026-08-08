@@ -3,6 +3,7 @@ package br.com.ricardo.vagaradar.integration.openai;
 import br.com.ricardo.vagaradar.config.OpenAiProperties;
 import br.com.ricardo.vagaradar.entity.Vaga;
 import br.com.ricardo.vagaradar.exception.OpenAiIntegrationException;
+import br.com.ricardo.vagaradar.service.PerfilProfissionalService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,23 +19,17 @@ import java.util.Map;
 @Component
 public class OpenAiVagaAnalyzer {
 
-    private static final String PERFIL_PROFISSIONAL = """
-            Objetivo: estágio ou Desenvolvedor Backend Júnior.
-            Stack principal: Java, Spring Boot, APIs REST, JPA/Hibernate, PostgreSQL, SQL e Git.
-            Conhecimento básico: Docker, HTML, CSS e JavaScript.
-            Formação: Engenharia de Software em andamento.
-            Experiência: projetos pessoais e acadêmicos.
-            Preferência: São Paulo, híbrido ou remoto.
-            """;
-
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
     private final OpenAiProperties properties;
+    private final PerfilProfissionalService perfilProfissionalService;
 
-    public OpenAiVagaAnalyzer(RestClient.Builder restClientBuilder, ObjectMapper objectMapper, OpenAiProperties properties) {
+    public OpenAiVagaAnalyzer(RestClient.Builder restClientBuilder, ObjectMapper objectMapper, OpenAiProperties properties,
+                              PerfilProfissionalService perfilProfissionalService) {
         this.restClient = restClientBuilder.baseUrl(properties.baseUrl()).build();
         this.objectMapper = objectMapper;
         this.properties = properties;
+        this.perfilProfissionalService = perfilProfissionalService;
     }
 
     public OpenAiAnalysisResult analisar(Vaga vaga) {
@@ -76,7 +71,7 @@ public class OpenAiVagaAnalyzer {
                         Localização: %s
                         Modelo de trabalho: %s
                         Descrição: %s
-                        """.formatted(PERFIL_PROFISSIONAL, vaga.getCargo(), vaga.getEmpresa(),
+                        """.formatted(perfilProfissionalService.obterParaAnalise(), vaga.getCargo(), vaga.getEmpresa(),
                         vaga.getLocalizacao(), vaga.getModeloTrabalho(), vaga.getDescricao()))
         ));
         request.put("text", Map.of("format", Map.of(

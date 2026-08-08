@@ -4,6 +4,9 @@ const elements = {
   waiting: document.querySelector('#new-count'), refresh: document.querySelector('#refresh-button'),
   gmail: document.querySelector('#gmail-button'), process: document.querySelector('#process-button'),
   dialog: document.querySelector('#analysis-dialog'), analysis: document.querySelector('#analysis-content'),
+  profileButton: document.querySelector('#profile-button'), profileDialog: document.querySelector('#profile-dialog'),
+  profileForm: document.querySelector('#profile-form'), profileMode: document.querySelector('#profile-mode'),
+  profileError: document.querySelector('#profile-error'), profileReset: document.querySelector('#profile-reset'),
   search: document.querySelector('#search-filter'), workModel: document.querySelector('#work-model-filter'),
   vacancyStatus: document.querySelector('#status-filter'), score: document.querySelector('#score-filter')
 };
@@ -23,7 +26,31 @@ async function request(url, options = {}) {
     const error = await response.json().catch(() => ({}));
     throw new Error(error.message || `Não foi possível concluir a operação (${response.status}).`);
   }
-  return response.json();
+  return response.status === 204 ? null : response.json();
+}
+
+const profileFields = ['objetivo', 'stackPrincipal', 'conhecimentosBasicos', 'formacao', 'experiencia', 'preferencias'];
+
+function fillProfile(profile) {
+  for (const field of profileFields) {
+    document.querySelector(`#profile-${field.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`)}`).value = profile[field] || '';
+  }
+  elements.profileMode.textContent = profile.personalizado
+    ? 'Você está usando uma versão personalizada do perfil.'
+    : 'Você está usando o perfil-base padrão do projeto.';
+  elements.profileReset.disabled = !profile.personalizado;
+}
+
+async function openProfile() {
+  elements.profileError.textContent = '';
+  elements.profileButton.disabled = true;
+  try {
+    fillProfile(await request('/api/perfil'));
+    elements.profileDialog.showModal();
+  } catch (error) {
+    elements.status.textContent = error.message;
+    elements.status.classList.add('error');
+  } finally { elements.profileButton.disabled = false; }
 }
 
 function updateStats(vacancies) {
@@ -131,8 +158,36 @@ elements.process.addEventListener('click', async () => {
 });
 
 elements.refresh.addEventListener('click', loadVacancies);
+elements.profileButton.addEventListener('click', openProfile);
+elements.profileForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  elements.profileError.textContent = '';
+  const submit = elements.profileForm.querySelector('[type="submit"]');
+  submit.disabled = true;
+  try {
+    const profile = Object.fromEntries(profileFields.map(field => [field,
+      document.querySelector(`#profile-${field.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`)}`).value.trim()
+    ]));
+    fillProfile(await request('/api/perfil', {
+      method: 'PUT', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(profile)
+    }));
+    elements.profileMode.textContent = 'Perfil salvo. As próximas análises usarão esta versão.';
+  } catch (error) { elements.profileError.textContent = error.message; }
+  finally { submit.disabled = false; }
+});
+elements.profileReset.addEventListener('click', async () => {
+  if (!window.confirm('Restaurar o perfil-base fixo do projeto? A sua versão personalizada será removida.')) return;
+  elements.profileReset.disabled = true;
+  elements.profileError.textContent = '';
+  try {
+    await request('/api/perfil', { method: 'DELETE' });
+    fillProfile(await request('/api/perfil'));
+    elements.profileMode.textContent = 'Perfil-base padrão restaurado.';
+  } catch (error) { elements.profileError.textContent = error.message; }
+});
 for (const filter of [elements.search, elements.workModel, elements.vacancyStatus, elements.score]) {
   filter.addEventListener(filter === elements.search ? 'input' : 'change', applyFilters);
 }
 document.querySelector('#dialog-close').addEventListener('click', () => elements.dialog.close());
+document.querySelector('#profile-dialog-close').addEventListener('click', () => elements.profileDialog.close());
 loadVacancies();
