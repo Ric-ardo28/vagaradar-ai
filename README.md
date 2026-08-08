@@ -125,6 +125,12 @@ fornecida pela plataforma e deve usar `SESSION_COOKIE_SECURE=true` em produção
 O plano gratuito entra em repouso após uma hora sem tráfego, portanto não é adequado para garantir a execução do
 agendador do Gmail. Mantenha `GMAIL_SCHEDULER_ENABLED=false` e importe as vagas manualmente pelo painel.
 
+### Deploy gratuito na Oracle Cloud
+
+Para manter o backend sempre disponível em uso pessoal, a opção principal é a VM Always Free da Oracle Cloud.
+O guia, a composição Docker com HTTPS e as configurações do OAuth estão em [docs/DEPLOY_ORACLE.md](docs/DEPLOY_ORACLE.md).
+Ele usa Caddy, mantém o PostgreSQL fora da internet e não requer versionar segredos.
+
 ## Integrações
 
 - OpenAI: obrigatória apenas para gerar análises; usa `OPENAI_API_KEY`.
