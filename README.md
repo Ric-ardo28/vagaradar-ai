@@ -2,6 +2,9 @@
 
 Backend em Java 21 e Spring Boot para cadastrar vagas de tecnologia, analisar compatibilidade com um perfil Java/Spring por IA e enviar alertas ao Discord.
 
+O projeto também disponibiliza um painel web local em `http://localhost:8080/`. Ele lista as vagas importadas,
+exibe o status de análise e permite iniciar a conexão Gmail ou a importação manual.
+
 ## Pré-requisitos
 
 - Java 21
@@ -20,6 +23,9 @@ mvn spring-boot:run
 ```
 
 As migrações do banco são executadas automaticamente pelo Flyway.
+
+Depois de iniciar, abra `http://localhost:8080/` para acessar o painel. A ação **Importar e analisar** pode consumir
+créditos da OpenAI; por isso, ela sempre exige uma confirmação no navegador.
 
 ## Endpoints
 

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Painel do VagaRadar AI">
+  <title>VagaRadar AI</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="VagaRadar AI, início">
+      <span class="brand-mark">VR</span>
+      <span>VagaRadar <strong>AI</strong></span>
+    </a>
+    <button class="button button-secondary" id="refresh-button" type="button">Atualizar vagas</button>
+  </header>
+
+  <main class="page-content">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">SEU RADAR DE OPORTUNIDADES</p>
+        <h1>Vagas que combinam<br>com o seu perfil.</h1>
+        <p class="hero-copy">Importe alertas do Gmail, analise oportunidades Java/Spring com IA e priorize as melhores candidaturas.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="button button-primary" id="gmail-button" type="button">Conectar Gmail</button>
+        <button class="button button-dark" id="process-button" type="button">Importar e analisar</button>
+      </div>
+    </section>
+
+    <section class="stats" aria-label="Resumo das vagas">
+      <article><span id="total-count">0</span><small>vagas encontradas</small></article>
+      <article><span id="analyzed-count">0</span><small>vagas analisadas</small></article>
+      <article><span id="new-count">0</span><small>aguardando análise</small></article>
+    </section>
+
+    <section class="vacancies-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">OPORTUNIDADES</p>
+          <h2>Vagas encontradas</h2>
+        </div>
+        <p id="status-message" class="status-message" role="status">Carregando vagas...</p>
+      </div>
+      <div id="vacancies" class="vacancies" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <dialog id="analysis-dialog" class="analysis-dialog">
+    <button id="dialog-close" class="dialog-close" type="button" aria-label="Fechar">×</button>
+    <div id="analysis-content"></div>
+  </dialog>
+
+  <template id="empty-state-template">
+    <div class="empty-state">
+      <div class="empty-icon">⌁</div>
+      <h3>Nenhuma vaga por enquanto</h3>
+      <p>Conecte o Gmail e importe seus alertas do LinkedIn para começar.</p>
+    </div>
+  </template>
+
+  <script src="/js/app.js" defer></script>
+</body>
+</html>
