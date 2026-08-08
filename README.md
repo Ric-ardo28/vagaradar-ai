@@ -63,8 +63,14 @@ O PostgreSQL ficará disponível no serviço `postgres`; a aplicação aguarda a
 
 - OpenAI: obrigatória apenas para gerar análises; usa `OPENAI_API_KEY`.
 - Discord: opcional; configure `DISCORD_WEBHOOK_URL` para receber alertas.
-- Gmail: pendente de credenciais OAuth próprias do Google para leitura automática pelo backend.
+- Gmail: leitura de alertas via OAuth 2.0 do Google; exige `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` locais.
 
 ## Conectar Gmail
 
-Com `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` configurados, abra `http://localhost:8080/api/gmail/connect` e acesse a URL retornada. Após aprovar o consentimento, consulte `GET /api/gmail/alerts` na mesma sessão para listar alertas candidatos em modo somente leitura.
+Com `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` configurados, abra
+`http://localhost:8080/oauth2/authorization/google`. Após aprovar o consentimento, use a mesma sessão do
+navegador para:
+
+- `GET /api/gmail/alerts`: listar alertas candidatos em modo somente leitura;
+- `POST /api/gmail/import`: ler o conteúdo dos alertas, extrair links de vagas do LinkedIn e persistir apenas
+  as vagas ainda não cadastradas.

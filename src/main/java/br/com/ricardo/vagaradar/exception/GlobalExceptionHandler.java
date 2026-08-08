@@ -1,6 +1,7 @@
 package br.com.ricardo.vagaradar.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import br.com.ricardo.vagaradar.integration.gmail.GmailIntegrationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -73,6 +74,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DiscordIntegrationException.class)
     public ResponseEntity<ApiErrorResponse> handleDiscordIntegration(
             DiscordIntegrationException exception,
+            HttpServletRequest request
+    ) {
+        return response(HttpStatus.BAD_GATEWAY, exception.getMessage(), request, Map.of());
+    }
+
+    @ExceptionHandler(GmailIntegrationException.class)
+    public ResponseEntity<ApiErrorResponse> handleGmailIntegration(
+            GmailIntegrationException exception,
             HttpServletRequest request
     ) {
         return response(HttpStatus.BAD_GATEWAY, exception.getMessage(), request, Map.of());

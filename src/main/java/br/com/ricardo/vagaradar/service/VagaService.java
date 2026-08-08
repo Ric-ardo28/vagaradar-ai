@@ -40,6 +40,19 @@ public class VagaService {
     @Transactional
     public VagaResponse criar(VagaCreateRequest request) {
         verificarDuplicidade(request);
+        return paraResponse(salvar(request));
+    }
+
+    @Transactional
+    public boolean criarSeNova(VagaCreateRequest request) {
+        if (jaExiste(request)) {
+            return false;
+        }
+        salvar(request);
+        return true;
+    }
+
+    private Vaga salvar(VagaCreateRequest request) {
         Vaga vaga = new Vaga(
                 request.linkedinId(),
                 request.cargo(),
@@ -50,18 +63,20 @@ public class VagaService {
                 request.link(),
                 request.dataPublicacao()
         );
-
-        return paraResponse(vagaRepository.save(vaga));
+        return vagaRepository.save(vaga);
     }
 
     private void verificarDuplicidade(VagaCreateRequest request) {
+        if (jaExiste(request)) {
+            throw new VagaDuplicadaException();
+        }
+    }
+
+    private boolean jaExiste(VagaCreateRequest request) {
         boolean mesmaUrl = vagaRepository.findByLink(request.link()).isPresent();
         boolean mesmoLinkedinId = request.linkedinId() != null && !request.linkedinId().isBlank()
                 && vagaRepository.findByLinkedinId(request.linkedinId()).isPresent();
-
-        if (mesmaUrl || mesmoLinkedinId) {
-            throw new VagaDuplicadaException();
-        }
+        return mesmaUrl || mesmoLinkedinId;
     }
 
     @Transactional(readOnly = true)
