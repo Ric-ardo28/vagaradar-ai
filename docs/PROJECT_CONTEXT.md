@@ -28,7 +28,8 @@ Há testes para fluxos HTTP, importação, processamento e arquivos Docker para 
 6. Integração futura com Discord para alertas.
 7. Integração futura com Gmail ou outra fonte de alertas de vaga.
 8. Prevenção de duplicidade, automação agendada e refinamentos.
-9. Testes de integração, documentação e preparação para deploy.
+9. Testes de integração, documentação e preparação para deploy. Em andamento: health check e Testcontainers foram adicionados;
+   falta apenas escolher uma plataforma antes de uma publicação real.
 
 As fases poderão ser ajustadas conforme as decisões do desenvolvimento.
 

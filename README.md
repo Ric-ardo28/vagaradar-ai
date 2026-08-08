@@ -66,6 +66,24 @@ com uma instalação local do PostgreSQL que use a porta padrão `5432`.
 
 O PostgreSQL ficará disponível no serviço `postgres`; a aplicação aguarda a verificação de saúde do banco antes de iniciar.
 
+## Health check e deploy
+
+O health check público fica em `GET /actuator/health`. Ele é usado pelo Docker e pode ser configurado pela
+plataforma de hospedagem para confirmar que a aplicação e o banco estão disponíveis.
+
+Antes de publicar, configure na plataforma as mesmas variáveis de `.env.example`, sem versionar valores reais:
+
+- `DATABASE_URL`, `DATABASE_USERNAME` e `DATABASE_PASSWORD` de um PostgreSQL gerenciado;
+- `OPENAI_API_KEY` e, opcionalmente, `DISCORD_WEBHOOK_URL`;
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` e `GMAIL_OAUTH_ENABLED=true` se for usar Gmail;
+- `GMAIL_SCHEDULER_ENABLED=false` inicialmente. Ative-o somente após validar custos e permissões.
+
+Em produção, inclua a URL pública no URI de redirecionamento do cliente OAuth do Google. Exemplo:
+`https://seu-dominio.com/login/oauth2/code/google`.
+
+Os testes de integração usam Testcontainers com PostgreSQL 16 quando o Docker Engine está disponível. Em ambientes
+sem Docker, eles são ignorados; os testes unitários continuam sendo executados normalmente.
+
 ## Integrações
 
 - OpenAI: obrigatória apenas para gerar análises; usa `OPENAI_API_KEY`.

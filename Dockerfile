@@ -7,6 +7,8 @@ RUN mvn -q -DskipTests package
 
 FROM amazoncorretto:21-alpine
 WORKDIR /app
-COPY --from=build /app/target/vagaradar-0.0.1-SNAPSHOT.jar app.jar
+RUN addgroup -S vagaradar && adduser -S vagaradar -G vagaradar && apk add --no-cache wget
+COPY --from=build --chown=vagaradar:vagaradar /app/target/vagaradar-0.0.1-SNAPSHOT.jar app.jar
+USER vagaradar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

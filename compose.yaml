@@ -21,14 +21,27 @@ services:
       DATABASE_URL: jdbc:postgresql://postgres:5432/vagaradar
       DATABASE_USERNAME: ${DATABASE_USERNAME:-vagaradar}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD:-vagaradar}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.6-terra}
       DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+      DISCORD_MINIMUM_SCORE: ${DISCORD_MINIMUM_SCORE:-70}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GMAIL_OAUTH_ENABLED: ${GMAIL_OAUTH_ENABLED:-false}
+      GMAIL_SCHEDULER_ENABLED: ${GMAIL_SCHEDULER_ENABLED:-false}
+      GMAIL_SCHEDULER_FIXED_DELAY: ${GMAIL_SCHEDULER_FIXED_DELAY:-PT6H}
+      GMAIL_SCHEDULER_INITIAL_DELAY: ${GMAIL_SCHEDULER_INITIAL_DELAY:-PT5M}
     depends_on:
       postgres:
         condition: service_healthy
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
 volumes:
   postgres-data:

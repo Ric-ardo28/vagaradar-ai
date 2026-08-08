@@ -44,3 +44,13 @@ gmail:
     enabled: ${GMAIL_SCHEDULER_ENABLED:false}
     fixed-delay: ${GMAIL_SCHEDULER_FIXED_DELAY:PT6H}
     initial-delay: ${GMAIL_SCHEDULER_INITIAL_DELAY:PT5M}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
