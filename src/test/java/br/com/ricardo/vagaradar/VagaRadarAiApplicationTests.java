@@ -13,7 +13,8 @@ import br.com.ricardo.vagaradar.integration.discord.DiscordNotifier;
         "spring.autoconfigure.exclude="
                 + "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,"
                 + "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration",
-        "gmail.oauth-enabled=false"
+        "gmail.oauth-enabled=false",
+        "gmail.scheduler.enabled=false"
 })
 class VagaRadarAiApplicationTests {
 

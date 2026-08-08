@@ -4,7 +4,7 @@ import br.com.ricardo.vagaradar.service.GmailProcessingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -19,16 +19,16 @@ public class GmailProcessingScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GmailProcessingScheduler.class);
 
-    private final JdbcTemplate jdbcTemplate;
+    private final JdbcOperations jdbcOperations;
     private final OAuth2AuthorizedClientManager authorizedClientManager;
     private final GmailProcessingService gmailProcessingService;
 
     public GmailProcessingScheduler(
-            JdbcTemplate jdbcTemplate,
+            JdbcOperations jdbcOperations,
             OAuth2AuthorizedClientManager authorizedClientManager,
             GmailProcessingService gmailProcessingService
     ) {
-        this.jdbcTemplate = jdbcTemplate;
+        this.jdbcOperations = jdbcOperations;
         this.authorizedClientManager = authorizedClientManager;
         this.gmailProcessingService = gmailProcessingService;
     }
@@ -44,7 +44,7 @@ public class GmailProcessingScheduler {
     }
 
     private Optional<String> buscarPrincipalAutorizado() {
-        return jdbcTemplate.query(
+        return jdbcOperations.query(
                 """
                         SELECT principal_name
                         FROM oauth2_authorized_client
