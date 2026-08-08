@@ -4,15 +4,27 @@ spring:
   config:
     import: optional:file:.env.local[.properties]
   datasource:
-    url: ${DATABASE_URL}
-    username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/vagaradar}
+    username: ${DATABASE_USERNAME:vagaradar}
+    password: ${DATABASE_PASSWORD:vagaradar}
   jpa:
     hibernate:
       ddl-auto: validate
     open-in-view: false
   flyway:
     enabled: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            scope:
+              - openid
+              - profile
+              - email
+              - https://www.googleapis.com/auth/gmail.readonly
 
 server:
   port: ${SERVER_PORT:8080}
@@ -24,3 +36,6 @@ openai:
 
 discord:
   webhook-url: ${DISCORD_WEBHOOK_URL:}
+
+gmail:
+  oauth-enabled: ${GMAIL_OAUTH_ENABLED:false}

@@ -60,3 +60,7 @@ O PostgreSQL ficará disponível no serviço `postgres`; a aplicação aguarda a
 - OpenAI: obrigatória apenas para gerar análises; usa `OPENAI_API_KEY`.
 - Discord: opcional; configure `DISCORD_WEBHOOK_URL` para receber alertas.
 - Gmail: pendente de credenciais OAuth próprias do Google para leitura automática pelo backend.
+
+## Conectar Gmail
+
+Com `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` configurados, abra `http://localhost:8080/api/gmail/connect` e acesse a URL retornada. Após aprovar o consentimento, consulte `GET /api/gmail/alerts` na mesma sessão para listar alertas candidatos em modo somente leitura.
