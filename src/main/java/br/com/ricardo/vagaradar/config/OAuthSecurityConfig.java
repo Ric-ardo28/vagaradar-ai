@@ -91,6 +91,7 @@ public class OAuthSecurityConfig {
         OAuth2AuthorizationRequestResolver authorizationRequestResolver = authorizationRequestResolverProvider.getIfAvailable();
         if (authorizedClientService != null && authorizationRequestResolver != null) {
             http.oauth2Login(oauth2 -> oauth2
+                    .loginPage("/login")
                     .authorizationEndpoint(endpoint -> endpoint.authorizationRequestResolver(authorizationRequestResolver))
                     .authorizedClientService(authorizedClientService)
                     .defaultSuccessUrl("/", true)
