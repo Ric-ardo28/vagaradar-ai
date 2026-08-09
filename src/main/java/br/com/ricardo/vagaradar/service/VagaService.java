@@ -5,6 +5,7 @@ import br.com.ricardo.vagaradar.dto.VagaResponse;
 import br.com.ricardo.vagaradar.dto.AnaliseVagaResponse;
 import br.com.ricardo.vagaradar.entity.AnaliseVaga;
 import br.com.ricardo.vagaradar.entity.Vaga;
+import br.com.ricardo.vagaradar.entity.StatusVaga;
 import br.com.ricardo.vagaradar.exception.VagaNaoEncontradaException;
 import br.com.ricardo.vagaradar.exception.VagaDuplicadaException;
 import br.com.ricardo.vagaradar.integration.openai.OpenAiAnalysisResult;
@@ -91,6 +92,13 @@ public class VagaService {
         return vagaRepository.findById(id)
                 .map(this::paraResponse)
                 .orElseThrow(() -> new VagaNaoEncontradaException(id));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> listarIdsPendentesDeAnalise() {
+        return vagaRepository.findAllByStatus(StatusVaga.RECEBIDA).stream()
+                .map(Vaga::getId)
+                .toList();
     }
 
     @Transactional

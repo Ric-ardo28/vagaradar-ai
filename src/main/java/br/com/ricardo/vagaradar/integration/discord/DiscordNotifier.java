@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -16,6 +17,8 @@ import java.util.Map;
 
 @Component
 public class DiscordNotifier {
+
+    private static final int MAX_TENTATIVAS = 3;
 
     private final RestClient restClient;
     private final DiscordProperties properties;
@@ -31,15 +34,34 @@ public class DiscordNotifier {
             return;
         }
 
+        for (int tentativa = 1; tentativa <= MAX_TENTATIVAS; tentativa++) {
+            try {
+                restClient.post()
+                        .uri(URI.create(properties.webhookUrl()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(montarMensagem(vaga, analise))
+                        .retrieve()
+                        .toBodilessEntity();
+                return;
+            } catch (RestClientResponseException exception) {
+                if (exception.getStatusCode().value() == 429 && tentativa < MAX_TENTATIVAS) {
+                    aguardarLimiteDoDiscord();
+                    continue;
+                }
+                throw new DiscordIntegrationException(
+                        "O Discord recusou o alerta (HTTP %s).".formatted(exception.getStatusCode().value()), exception);
+            } catch (IllegalArgumentException | RestClientException exception) {
+                throw new DiscordIntegrationException("Não foi possível enviar o alerta para o Discord.", exception);
+            }
+        }
+    }
+
+    private void aguardarLimiteDoDiscord() {
         try {
-            restClient.post()
-                    .uri(URI.create(properties.webhookUrl()))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(montarMensagem(vaga, analise))
-                    .retrieve()
-                    .toBodilessEntity();
-        } catch (IllegalArgumentException | RestClientException exception) {
-            throw new DiscordIntegrationException("Não foi possível enviar o alerta para o Discord.", exception);
+            Thread.sleep(1_500);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new DiscordIntegrationException("O envio do alerta ao Discord foi interrompido.", exception);
         }
     }
 

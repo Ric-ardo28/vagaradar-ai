@@ -18,4 +18,13 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Set-Location $projectDirectory
+$environmentFile = Join-Path $projectDirectory '.env.local'
+$webhookSetting = Get-Content -LiteralPath $environmentFile |
+    Where-Object { $_ -match '^DISCORD_WEBHOOK_URL=https://discord(?:app)?\.com/api/webhooks/\S+$' } |
+    Select-Object -First 1
+
+if ($webhookSetting) {
+    $env:DISCORD_WEBHOOK_URL = $webhookSetting.Substring('DISCORD_WEBHOOK_URL='.Length)
+}
+
 docker compose --env-file .env.local up -d

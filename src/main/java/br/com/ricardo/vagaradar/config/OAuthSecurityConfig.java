@@ -71,7 +71,7 @@ public class OAuthSecurityConfig {
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
                 )
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/login.html", "/css/**", "/js/**", "/favicon.ico", "/actuator/health").permitAll()
+                        .requestMatchers("/login", "/login.html", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/favicon.svg", "/actuator/health").permitAll()
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         .anyRequest().authenticated()
                 )

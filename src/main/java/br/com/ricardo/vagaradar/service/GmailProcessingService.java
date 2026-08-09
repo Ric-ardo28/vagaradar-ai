@@ -4,6 +4,8 @@ import br.com.ricardo.vagaradar.integration.gmail.GmailImportResult;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @ConditionalOnProperty(prefix = "gmail", name = "oauth-enabled", havingValue = "true")
 public class GmailProcessingService {
@@ -18,9 +20,10 @@ public class GmailProcessingService {
 
     public GmailProcessingResult processarAlertas(String accessToken) {
         GmailImportResult importacao = gmailImportService.importarAlertas(accessToken);
-        for (Long vagaId : importacao.vagasImportadasIds()) {
+        List<Long> vagasPendentes = vagaService.listarIdsPendentesDeAnalise();
+        for (Long vagaId : vagasPendentes) {
             vagaService.analisar(vagaId);
         }
-        return new GmailProcessingResult(importacao, importacao.vagasImportadasIds().size());
+        return new GmailProcessingResult(importacao, vagasPendentes.size());
     }
 }

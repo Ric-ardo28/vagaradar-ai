@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Painel do VagaRadar AI">
   <title>VagaRadar AI</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="/" aria-label="VagaRadar AI, início">
-      <span class="brand-mark">VR</span>
-      <span>VagaRadar <strong>AI</strong></span>
+      <img class="brand-logo" src="/images/vagaradar-logo.png" alt="VagaRadar AI">
     </a>
     <div class="topbar-actions">
       <button class="button button-secondary" id="profile-button" type="button">Meu perfil</button>
@@ -26,13 +26,15 @@
         <h1>Vagas que combinam<br>com o seu perfil.</h1>
         <p class="hero-copy">Importe alertas do Gmail, analise oportunidades Java/Spring com IA e priorize as melhores candidaturas.</p>
       </div>
-      <div class="hero-actions">
-        <button class="button button-primary" id="gmail-button" type="button">Conectar Gmail</button>
-        <button class="button button-dark" id="process-button" type="button">Buscar e analisar agora</button>
-      </div>
-      <div class="integration-status" aria-live="polite">
-        <p id="gmail-status">Verificando conexão do Gmail...</p>
-        <p id="discord-status">Verificando configuração do Discord...</p>
+      <div class="integration-panel">
+        <div class="hero-actions">
+          <button class="button button-primary" id="gmail-button" type="button">Conectar Gmail</button>
+          <button class="button button-dark" id="process-button" type="button">Buscar e analisar agora</button>
+        </div>
+        <div class="integration-status" aria-live="polite">
+          <p id="gmail-status">Verificando conexão do Gmail...</p>
+          <p id="discord-status">Verificando configuração do Discord...</p>
+        </div>
       </div>
     </section>
 
