@@ -28,6 +28,9 @@ class GmailImportServiceTest {
     @Mock
     private VagaService vagaService;
 
+    @Mock
+    private GmailSyncStateService gmailSyncStateService;
+
     @Test
     void deveImportarSomenteVagasAindaNaoCadastradas() {
         GmailJobAlert alert = new GmailJobAlert(
@@ -41,7 +44,8 @@ class GmailImportServiceTest {
                         """,
                 Instant.parse("2026-08-08T12:00:00Z")
         );
-        given(gmailReader.buscarAlertasDetalhados("token")).willReturn(List.of(alert));
+        given(gmailSyncStateService.ultimoSucesso()).willReturn(Optional.of(Instant.parse("2026-08-08T11:00:00Z")));
+        given(gmailReader.buscarAlertasDetalhados(org.mockito.ArgumentMatchers.eq("token"), any())).willReturn(List.of(alert));
         given(vagaService.criarSeNova(any())).willReturn(
                 Optional.of(new br.com.ricardo.vagaradar.dto.VagaResponse(
                         10L, null, "Desenvolvedor Java", "Empresa", "Descrição", null,
@@ -50,7 +54,7 @@ class GmailImportServiceTest {
                         br.com.ricardo.vagaradar.entity.StatusVaga.RECEBIDA, null
                 ))
         ).willReturn(Optional.empty());
-        GmailImportService service = new GmailImportService(gmailReader, vagaService);
+        GmailImportService service = new GmailImportService(gmailReader, vagaService, gmailSyncStateService);
 
         GmailImportResult result = service.importarAlertas("token");
 
@@ -59,6 +63,7 @@ class GmailImportServiceTest {
                 br.com.ricardo.vagaradar.dto.VagaCreateRequest.class
         );
         verify(vagaService, times(2)).criarSeNova(captor.capture());
+        verify(gmailSyncStateService).registrarSucesso(any());
         assertThat(captor.getAllValues())
                 .extracting(br.com.ricardo.vagaradar.dto.VagaCreateRequest::link)
                 .containsExactly(

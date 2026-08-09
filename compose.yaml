@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_DB: vagaradar
       POSTGRES_USER: ${DATABASE_USERNAME:-vagaradar}
@@ -17,6 +18,7 @@ services:
 
   app:
     build: .
+    restart: unless-stopped
     environment:
       DATABASE_URL: jdbc:postgresql://postgres:5432/vagaradar
       DATABASE_USERNAME: ${DATABASE_USERNAME:-vagaradar}
@@ -31,6 +33,10 @@ services:
       GMAIL_SCHEDULER_ENABLED: ${GMAIL_SCHEDULER_ENABLED:-false}
       GMAIL_SCHEDULER_FIXED_DELAY: ${GMAIL_SCHEDULER_FIXED_DELAY:-PT6H}
       GMAIL_SCHEDULER_INITIAL_DELAY: ${GMAIL_SCHEDULER_INITIAL_DELAY:-PT5M}
+      APP_ADMIN_USERNAME: ${APP_ADMIN_USERNAME:?Configure APP_ADMIN_USERNAME in .env.local}
+      APP_ADMIN_PASSWORD: ${APP_ADMIN_PASSWORD:?Configure APP_ADMIN_PASSWORD in .env.local}
+      SESSION_TIMEOUT: ${SESSION_TIMEOUT:-PT8H}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
     depends_on:
       postgres:
         condition: service_healthy

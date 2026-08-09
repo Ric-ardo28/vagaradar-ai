@@ -28,7 +28,11 @@
       </div>
       <div class="hero-actions">
         <button class="button button-primary" id="gmail-button" type="button">Conectar Gmail</button>
-        <button class="button button-dark" id="process-button" type="button">Importar e analisar</button>
+        <button class="button button-dark" id="process-button" type="button">Buscar e analisar agora</button>
+      </div>
+      <div class="integration-status" aria-live="polite">
+        <p id="gmail-status">Verificando conexão do Gmail...</p>
+        <p id="discord-status">Verificando configuração do Discord...</p>
       </div>
     </section>
 
@@ -85,7 +89,7 @@
     <div class="empty-state">
       <div class="empty-icon">⌁</div>
       <h3>Nenhuma vaga por enquanto</h3>
-      <p>Conecte o Gmail e importe seus alertas do LinkedIn para começar.</p>
+      <p>Conecte o Gmail e use “Buscar e analisar agora” para importar seus alertas do LinkedIn.</p>
     </div>
   </template>
 

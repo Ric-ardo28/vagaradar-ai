@@ -1,5 +1,7 @@
 package br.com.ricardo.vagaradar.controller;
 
+import br.com.ricardo.vagaradar.config.DiscordProperties;
+import br.com.ricardo.vagaradar.dto.IntegrationStatusResponse;
 import br.com.ricardo.vagaradar.integration.gmail.GmailMessageSummary;
 import br.com.ricardo.vagaradar.integration.gmail.GmailReader;
 import br.com.ricardo.vagaradar.integration.gmail.GmailImportResult;
@@ -7,10 +9,12 @@ import br.com.ricardo.vagaradar.service.GmailImportService;
 import br.com.ricardo.vagaradar.service.GmailProcessingResult;
 import br.com.ricardo.vagaradar.service.GmailProcessingService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import jakarta.persistence.EntityManager;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,15 +29,21 @@ public class GmailOAuthController {
     private final GmailReader gmailReader;
     private final GmailImportService gmailImportService;
     private final GmailProcessingService gmailProcessingService;
+    private final EntityManager entityManager;
+    private final DiscordProperties discordProperties;
 
     public GmailOAuthController(
             GmailReader gmailReader,
             GmailImportService gmailImportService,
-            GmailProcessingService gmailProcessingService
+            GmailProcessingService gmailProcessingService,
+            EntityManager entityManager,
+            DiscordProperties discordProperties
     ) {
         this.gmailReader = gmailReader;
         this.gmailImportService = gmailImportService;
         this.gmailProcessingService = gmailProcessingService;
+        this.entityManager = entityManager;
+        this.discordProperties = discordProperties;
     }
 
     @GetMapping("/api/gmail/connect")
@@ -44,6 +54,28 @@ public class GmailOAuthController {
     @GetMapping("/api/gmail/connected")
     Map<String, String> connected(@AuthenticationPrincipal OAuth2User user) {
         return Map.of("message", "Gmail conectado para " + user.getAttribute("email") + ".");
+    }
+
+    @GetMapping("/api/integracoes/status")
+    @Transactional(readOnly = true)
+    IntegrationStatusResponse statusDasIntegracoes() {
+        String gmailAccount = (String) entityManager.createNativeQuery(
+                """
+                SELECT principal_name
+                FROM oauth2_authorized_client
+                WHERE client_registration_id = 'google'
+                ORDER BY created_at DESC
+                LIMIT 1
+                """
+        ).getResultStream().findFirst().orElse(null);
+        boolean discordConfigured = discordProperties.webhookUrl() != null
+                && !discordProperties.webhookUrl().isBlank();
+        return new IntegrationStatusResponse(
+                gmailAccount != null,
+                gmailAccount,
+                discordConfigured,
+                discordProperties.minimumScore()
+        );
     }
 
     @GetMapping("/api/gmail/alerts")

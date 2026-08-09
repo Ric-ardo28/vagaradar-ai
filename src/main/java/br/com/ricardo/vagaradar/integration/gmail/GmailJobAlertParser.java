@@ -20,11 +20,14 @@ public class GmailJobAlertParser {
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL
     );
     private static final Pattern LINKEDIN_JOB_URL_PATTERN = Pattern.compile(
-            "https?://[^\\s\\\"'<>]+linkedin\\.com/(?:comm/)?jobs/view/\\d+[^\\s\\\"'<>]*",
+            "https?://[^\\s\\\"'<>]+linkedin\\.com/(?:comm/)?jobs/view/(?<jobId>\\d+)[^\\s\\\"'<>]*",
             Pattern.CASE_INSENSITIVE
     );
 
     public List<VagaCreateRequest> extrairVagas(GmailJobAlert alert) {
+        if (ehConfirmacaoDeAlerta(alert.subject())) {
+            return List.of();
+        }
         Map<String, String> vagasPorLink = new LinkedHashMap<>();
         extrairLinksDoHtml(alert.html(), vagasPorLink);
         extrairLinksDoTexto(alert.plainText(), vagasPorLink);
@@ -32,6 +35,10 @@ public class GmailJobAlertParser {
         return vagasPorLink.entrySet().stream()
                 .map(entry -> criarVaga(alert, entry.getKey(), entry.getValue()))
                 .toList();
+    }
+
+    private boolean ehConfirmacaoDeAlerta(String subject) {
+        return subject != null && subject.toLowerCase().contains("foi criado seu alerta de vaga");
     }
 
     private void extrairLinksDoHtml(String html, Map<String, String> vagasPorLink) {
@@ -87,7 +94,11 @@ public class GmailJobAlertParser {
         }
 
         String link = HtmlUtils.htmlUnescape(value).trim().replaceAll("[),.;]+$", "");
-        return LINKEDIN_JOB_URL_PATTERN.matcher(link).matches() ? link : null;
+        Matcher matcher = LINKEDIN_JOB_URL_PATTERN.matcher(link);
+        if (!matcher.matches()) {
+            return null;
+        }
+        return "https://www.linkedin.com/jobs/view/" + matcher.group("jobId");
     }
 
     private String cargoDoAssunto(String subject) {

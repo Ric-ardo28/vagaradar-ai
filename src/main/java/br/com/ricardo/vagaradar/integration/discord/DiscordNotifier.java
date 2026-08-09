@@ -10,6 +10,8 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 import java.net.URI;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -33,7 +35,7 @@ public class DiscordNotifier {
             restClient.post()
                     .uri(URI.create(properties.webhookUrl()))
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(Map.of("content", montarMensagem(vaga, analise)))
+                    .body(montarMensagem(vaga, analise))
                     .retrieve()
                     .toBodilessEntity();
         } catch (IllegalArgumentException | RestClientException exception) {
@@ -41,21 +43,38 @@ public class DiscordNotifier {
         }
     }
 
-    private String montarMensagem(Vaga vaga, AnaliseVaga analise) {
-        return """
-                **Nova análise de vaga**
-                **Cargo:** %s
-                **Empresa:** %s
-                **Compatibilidade:** %d/100 (%s)
-                **Recomendação:** %s
-                **Link:** %s
-                """.formatted(
-                vaga.getCargo(),
-                vaga.getEmpresa(),
-                analise.getPontuacao(),
-                analise.getNivelCompatibilidade(),
-                analise.getRecomendacao(),
-                vaga.getLink()
+    private Map<String, Object> montarMensagem(Vaga vaga, AnaliseVaga analise) {
+        Map<String, Object> embed = new LinkedHashMap<>();
+        embed.put("title", limitar("Nova vaga: " + vaga.getCargo(), 256));
+        embed.put("url", vaga.getLink());
+        embed.put("color", corDaCompatibilidade(analise.getPontuacao()));
+        embed.put("fields", List.of(
+                campo("Empresa", limitar(vaga.getEmpresa(), 1_024), true),
+                campo("Compatibilidade", "%d/100 · %s".formatted(
+                        analise.getPontuacao(), analise.getNivelCompatibilidade()), true),
+                campo("Recomendação", limitar(analise.getRecomendacao(), 1_024), false),
+                campo("Link", limitar("[Abrir vaga](%s)".formatted(vaga.getLink()), 1_024), false)
+        ));
+        embed.put("footer", Map.of("text", "VagaRadar AI"));
+        return Map.of(
+                "embeds", List.of(embed),
+                "allowed_mentions", Map.of("parse", List.of())
         );
+    }
+
+    private Map<String, Object> campo(String nome, String valor, boolean inline) {
+        return Map.of("name", nome, "value", valor, "inline", inline);
+    }
+
+    private int corDaCompatibilidade(int pontuacao) {
+        return pontuacao >= 85 ? 0x2ecc71 : pontuacao >= 70 ? 0x3498db : 0xf1c40f;
+    }
+
+    private String limitar(String value, int tamanhoMaximo) {
+        String texto = value == null || value.isBlank() ? "Não informado" : value;
+        if (texto.length() <= tamanhoMaximo) {
+            return texto;
+        }
+        return texto.substring(0, tamanhoMaximo - 3) + "...";
     }
 }

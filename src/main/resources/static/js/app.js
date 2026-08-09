@@ -3,6 +3,7 @@ const elements = {
   total: document.querySelector('#total-count'), analyzed: document.querySelector('#analyzed-count'),
   waiting: document.querySelector('#new-count'), refresh: document.querySelector('#refresh-button'),
   gmail: document.querySelector('#gmail-button'), process: document.querySelector('#process-button'),
+  gmailStatus: document.querySelector('#gmail-status'), discordStatus: document.querySelector('#discord-status'),
   dialog: document.querySelector('#analysis-dialog'), analysis: document.querySelector('#analysis-content'),
   profileButton: document.querySelector('#profile-button'), profileDialog: document.querySelector('#profile-dialog'),
   profileForm: document.querySelector('#profile-form'), profileMode: document.querySelector('#profile-mode'),
@@ -106,6 +107,31 @@ async function loadVacancies() {
   }
 }
 
+async function loadIntegrationStatus() {
+  try {
+    const status = await request('/api/integracoes/status');
+    if (status.gmailConnected) {
+      elements.gmail.textContent = 'Trocar conta Gmail';
+      elements.gmailStatus.textContent = `Gmail conectado: ${status.gmailAccount}`;
+      elements.gmailStatus.classList.remove('warning');
+    } else {
+      elements.gmail.textContent = 'Conectar Gmail';
+      elements.gmailStatus.textContent = 'Gmail ainda não conectado.';
+      elements.gmailStatus.classList.add('warning');
+    }
+    if (status.discordConfigured) {
+      elements.discordStatus.textContent = `Discord configurado: alertas a partir de ${status.discordMinimumScore}/100.`;
+      elements.discordStatus.classList.remove('warning');
+    } else {
+      elements.discordStatus.textContent = 'Discord não configurado: informe o webhook para receber alertas.';
+      elements.discordStatus.classList.add('warning');
+    }
+  } catch (error) {
+    elements.gmailStatus.textContent = 'Não foi possível verificar a conexão do Gmail.';
+    elements.discordStatus.textContent = 'Não foi possível verificar a configuração do Discord.';
+  }
+}
+
 function showAnalysis(analysis) {
   elements.analysis.innerHTML = `
     <p class="eyebrow">ANÁLISE DE COMPATIBILIDADE</p>
@@ -145,7 +171,7 @@ elements.gmail.addEventListener('click', async () => {
 });
 
 elements.process.addEventListener('click', async () => {
-  if (!window.confirm('Importar novas vagas e analisá-las? Esta ação pode consumir créditos da OpenAI.')) return;
+  if (!window.confirm('Buscar novas vagas e analisá-las agora? Esta ação pode consumir créditos da OpenAI.')) return;
   elements.process.disabled = true; elements.process.textContent = 'Processando...';
   try {
     const result = await request('/api/gmail/process', { method:'POST' });
@@ -154,7 +180,7 @@ elements.process.addEventListener('click', async () => {
   } catch (error) {
     elements.status.textContent = error.message.includes('403') ? 'Conecte o Gmail antes de importar.' : error.message;
     elements.status.classList.add('error');
-  } finally { elements.process.disabled = false; elements.process.textContent = 'Importar e analisar'; }
+  } finally { elements.process.disabled = false; elements.process.textContent = 'Buscar e analisar agora'; }
 });
 
 elements.refresh.addEventListener('click', loadVacancies);
@@ -191,3 +217,4 @@ for (const filter of [elements.search, elements.workModel, elements.vacancyStatu
 document.querySelector('#dialog-close').addEventListener('click', () => elements.dialog.close());
 document.querySelector('#profile-dialog-close').addEventListener('click', () => elements.profileDialog.close());
 loadVacancies();
+loadIntegrationStatus();

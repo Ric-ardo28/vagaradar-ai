@@ -8,6 +8,7 @@ import org.springframework.web.client.RestClientException;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -22,7 +23,7 @@ public class GmailReader {
     }
 
     public List<GmailMessageSummary> buscarAlertas(String accessToken) {
-        JsonNode response = buscarListaDeMensagens(accessToken);
+        JsonNode response = buscarListaDeMensagens(accessToken, Instant.now().minus(Duration.ofDays(1)));
 
         List<GmailMessageSummary> messages = new ArrayList<>();
         if (response != null) {
@@ -37,8 +38,8 @@ public class GmailReader {
         return messages;
     }
 
-    public List<GmailJobAlert> buscarAlertasDetalhados(String accessToken) {
-        JsonNode response = buscarListaDeMensagens(accessToken);
+    public List<GmailJobAlert> buscarAlertasDetalhados(String accessToken, Instant recebidosDepoisDe) {
+        JsonNode response = buscarListaDeMensagens(accessToken, recebidosDepoisDe);
         List<GmailJobAlert> messages = new ArrayList<>();
 
         for (JsonNode message : response.path("messages")) {
@@ -50,12 +51,12 @@ public class GmailReader {
         return messages;
     }
 
-    private JsonNode buscarListaDeMensagens(String accessToken) {
+    private JsonNode buscarListaDeMensagens(String accessToken, Instant recebidosDepoisDe) {
         try {
             JsonNode response = restClient.get()
                     .uri(uriBuilder -> uriBuilder.path("/users/me/messages")
-                            .queryParam("q", "(subject:Java OR subject:Backend OR subject:Spring) newer_than:30d")
-                            .queryParam("maxResults", 20)
+                            .queryParam("q", consultaDeAlertasRecentes(recebidosDepoisDe))
+                            .queryParam("maxResults", 100)
                             .build())
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                     .retrieve()
@@ -64,6 +65,10 @@ public class GmailReader {
         } catch (RestClientException exception) {
             throw new GmailIntegrationException("Não foi possível consultar os alertas no Gmail.", exception);
         }
+    }
+
+    private String consultaDeAlertasRecentes(Instant recebidosDepoisDe) {
+        return "from:jobalerts-noreply@linkedin.com after:" + recebidosDepoisDe.getEpochSecond();
     }
 
     private GmailJobAlert buscarMensagem(String accessToken, String messageId) {
