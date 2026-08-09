@@ -27,7 +27,7 @@ mvn spring-boot:run
 
 As migrações do banco são executadas automaticamente pelo Flyway.
 
-Depois de iniciar, abra `http://localhost:8080/` para acessar o painel. A ação **Importar e analisar** pode consumir
+Depois de iniciar, abra `http://localhost:8080/` para acessar o painel. A ação **Buscar e analisar agora** pode consumir
 créditos da OpenAI; por isso, ela sempre exige uma confirmação no navegador.
 
 ## Acesso e segurança
@@ -57,6 +57,12 @@ do código.
 | GET | `/api/perfil` | Retorna o perfil-base ou a versão personalizada ativa |
 | PUT | `/api/perfil` | Salva a versão personalizada do perfil |
 | DELETE | `/api/perfil` | Remove a personalização e restaura o perfil-base |
+| GET | `/api/gmail/connect` | Retorna a URL para iniciar a autorização do Gmail |
+| GET | `/api/gmail/connected` | Confirma a conta Google da sessão atual |
+| GET | `/api/integracoes/status` | Informa o e-mail Gmail conectado e a configuração do Discord |
+| GET | `/api/gmail/alerts` | Lista alertas candidatos sem importar vagas |
+| POST | `/api/gmail/import` | Importa vagas novas dos alertas do LinkedIn |
+| POST | `/api/gmail/process` | Importa vagas novas e analisa todas as vagas pendentes |
 
 Exemplo de cadastro:
 
@@ -146,8 +152,13 @@ navegador para:
 - `GET /api/gmail/alerts`: listar alertas candidatos em modo somente leitura;
 - `POST /api/gmail/import`: ler o conteúdo dos alertas, extrair links de vagas do LinkedIn e persistir apenas
   as vagas ainda não cadastradas.
-- `POST /api/gmail/process`: importar vagas novas, analisá-las com a OpenAI e enviar ao Discord apenas as que
-  alcançarem `DISCORD_MINIMUM_SCORE` (70 por padrão).
+- `POST /api/gmail/process`: importar vagas novas, analisar todas as vagas que ainda estiverem pendentes e enviar ao
+  Discord apenas as que alcançarem `DISCORD_MINIMUM_SCORE` (70 por padrão). O painel também permite analisar uma vaga
+  pendente individualmente.
+
+Enquanto o projeto OAuth do Google estiver em modo de teste, somente os e-mails adicionados como **usuários de teste**
+na tela de consentimento do Google Cloud poderão autorizar o Gmail. Para permitir qualquer conta Google, o aplicativo
+precisa ser publicado e passar pela verificação exigida pelo escopo de leitura do Gmail.
 
 ## Automação agendada
 
