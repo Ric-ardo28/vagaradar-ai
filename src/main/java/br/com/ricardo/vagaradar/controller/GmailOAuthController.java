@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import jakarta.persistence.EntityManager;
@@ -31,19 +32,22 @@ public class GmailOAuthController {
     private final GmailProcessingService gmailProcessingService;
     private final EntityManager entityManager;
     private final DiscordProperties discordProperties;
+    private final OAuth2AuthorizedClientService authorizedClientService;
 
     public GmailOAuthController(
             GmailReader gmailReader,
             GmailImportService gmailImportService,
             GmailProcessingService gmailProcessingService,
             EntityManager entityManager,
-            DiscordProperties discordProperties
+            DiscordProperties discordProperties,
+            OAuth2AuthorizedClientService authorizedClientService
     ) {
         this.gmailReader = gmailReader;
         this.gmailImportService = gmailImportService;
         this.gmailProcessingService = gmailProcessingService;
         this.entityManager = entityManager;
         this.discordProperties = discordProperties;
+        this.authorizedClientService = authorizedClientService;
     }
 
     @GetMapping("/api/gmail/connect")
@@ -59,7 +63,7 @@ public class GmailOAuthController {
     @GetMapping("/api/integracoes/status")
     @Transactional(readOnly = true)
     IntegrationStatusResponse statusDasIntegracoes() {
-        String gmailAccount = (String) entityManager.createNativeQuery(
+        String principalName = (String) entityManager.createNativeQuery(
                 """
                 SELECT principal_name
                 FROM oauth2_authorized_client
@@ -68,6 +72,7 @@ public class GmailOAuthController {
                 LIMIT 1
                 """
         ).getResultStream().findFirst().orElse(null);
+        String gmailAccount = buscarEmailDaConta(principalName);
         boolean discordConfigured = discordProperties.webhookUrl() != null
                 && !discordProperties.webhookUrl().isBlank();
         return new IntegrationStatusResponse(
@@ -76,6 +81,26 @@ public class GmailOAuthController {
                 discordConfigured,
                 discordProperties.minimumScore()
         );
+    }
+
+    private String buscarEmailDaConta(String principalName) {
+        if (principalName == null || principalName.isBlank()) {
+            return null;
+        }
+
+        OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient("google", principalName);
+        if (client != null) {
+            try {
+                String email = gmailReader.buscarEmailDaConta(client.getAccessToken().getTokenValue());
+                if (!email.isBlank()) {
+                    return email;
+                }
+            } catch (RuntimeException ignored) {
+                // Mantém a conexão visível mesmo se o token precisar ser renovado em seguida.
+            }
+        }
+
+        return principalName.contains("@") ? principalName : "Conta Gmail conectada";
     }
 
     @GetMapping("/api/gmail/alerts")

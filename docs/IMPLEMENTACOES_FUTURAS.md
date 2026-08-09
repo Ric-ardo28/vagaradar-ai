@@ -1,0 +1,41 @@
+# Implementações futuras
+
+Este documento reúne ideias aprovadas para o VagaRadar AI que ainda não serão feitas agora. Cada item deve indicar seu objetivo, dependências e o que falta decidir antes de começar.
+
+## Prioridade alta
+
+### Processar alertas do LinkedIn assim que chegarem
+
+**Objetivo:** analisar e enviar ao Discord as vagas novas logo após a chegada do alerta no Gmail, sem esperar a rotina programada de seis horas.
+
+**Como funcionará:**
+
+1. O Gmail avisa o Google Cloud Pub/Sub que a caixa de entrada foi alterada.
+2. O Pub/Sub chama um endereço seguro do VagaRadar AI.
+3. A aplicação consulta somente as mensagens novas, importa as vagas, faz a análise e envia os alertas ao Discord.
+
+**Dependências:**
+
+- Aplicação publicada em uma VM ou servidor com endereço HTTPS público.
+- VM da Oracle Cloud disponível e configurada, ou outro provedor escolhido.
+- Projeto no Google Cloud com Pub/Sub habilitado.
+- Renovação periódica da assinatura de monitoramento do Gmail.
+
+**Situação:** aguardando a resolução da VM da Oracle Cloud. Até lá, a verificação programada continua como alternativa.
+
+## Próximas ideias a avaliar
+
+### Corrigir títulos das vagas já importadas
+
+Os novos alertas já usam a extração corrigida de título. As vagas antigas podem ser revisadas por uma reimportação controlada dos alertas, sem duplicar os links existentes.
+
+**Situação:** aguarda decisão sobre a reimportação.
+
+## Como registrar uma nova ideia
+
+Para cada implementação futura, adicionar uma seção com:
+
+- objetivo para o usuário;
+- dependências ou custos;
+- riscos ou decisões pendentes;
+- situação atual.

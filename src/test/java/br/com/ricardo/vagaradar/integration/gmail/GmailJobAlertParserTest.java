@@ -57,6 +57,35 @@ class GmailJobAlertParserTest {
     }
 
     @Test
+    void devePriorizarOTituloIndividualDoTextoQuandoOLinkHtmlTemTextoGenerico() {
+        GmailJobAlert alert = new GmailJobAlert(
+                "message-1", "thread-1", "Alerta de vagas", 
+                """
+                        Novas vagas correspondem às suas preferências.
+
+                        Desenvolvedor Java Júnior
+                        Code Group
+                        São Paulo e Região
+                        Visualizar vaga: https://www.linkedin.com/jobs/view/123?trackingId=abc
+                        --------------------
+                        Desenvolvedor Java
+                        DQR Tech
+                        São Paulo, Brasil
+                        Visualizar vaga: https://www.linkedin.com/jobs/view/456?trackingId=def
+                        """,
+                """
+                        <a href="https://www.linkedin.com/jobs/view/123">Desenvolvedor Java Júnior na empresa Code Group</a>
+                        <a href="https://www.linkedin.com/jobs/view/456">Desenvolvedor Java Júnior na empresa Code Group</a>
+                        """,
+                Instant.parse("2026-08-08T12:00:00Z")
+        );
+
+        assertThat(parser.extrairVagas(alert))
+                .extracting(VagaCreateRequest::cargo)
+                .containsExactly("Desenvolvedor Java Júnior", "Desenvolvedor Java");
+    }
+
+    @Test
     void deveIgnorarAlertaSemLinkDeVagaDoLinkedIn() {
         GmailJobAlert alert = new GmailJobAlert(
                 "message-1", "thread-1", "Boletim", "Conteúdo sem vagas", "", Instant.now()

@@ -61,13 +61,44 @@ public class GmailJobAlertParser {
             return;
         }
 
-        Matcher matcher = LINKEDIN_JOB_URL_PATTERN.matcher(HtmlUtils.htmlUnescape(text));
+        String textoDoAlerta = HtmlUtils.htmlUnescape(text);
+        Matcher matcher = LINKEDIN_JOB_URL_PATTERN.matcher(textoDoAlerta);
+        int fimDoLinkAnterior = 0;
         while (matcher.find()) {
             String link = normalizarLink(matcher.group());
             if (link != null) {
-                vagasPorLink.putIfAbsent(link, "");
+                String titulo = extrairTituloAntesDoLink(textoDoAlerta.substring(fimDoLinkAnterior, matcher.start()));
+                if (!titulo.isBlank()) {
+                    vagasPorLink.put(link, titulo);
+                } else {
+                    vagasPorLink.putIfAbsent(link, "");
+                }
+            }
+            fimDoLinkAnterior = matcher.end();
+        }
+    }
+
+    private String extrairTituloAntesDoLink(String trecho) {
+        String textoAntesDoLink = trecho
+                .replaceAll("(?i)visualizar\\s+vaga\\s*:\\s*$", "")
+                .trim();
+
+        for (String linha : textoAntesDoLink.split("\\R")) {
+            String candidata = limparTexto(linha);
+            if (!candidata.isBlank() && !ehTextoEstruturalDoAlerta(candidata)) {
+                return candidata;
             }
         }
+        return "";
+    }
+
+    private boolean ehTextoEstruturalDoAlerta(String value) {
+        String texto = value.toLowerCase();
+        return texto.matches("[-—_ ]+")
+                || texto.startsWith("seu alerta de vaga")
+                || texto.startsWith("novas vagas correspondem")
+                || texto.startsWith("candidate-se com")
+                || texto.startsWith("alerta do linkedin:");
     }
 
     private VagaCreateRequest criarVaga(GmailJobAlert alert, String link, String tituloDoLink) {

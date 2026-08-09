@@ -38,6 +38,19 @@ public class GmailReader {
         return messages;
     }
 
+    public String buscarEmailDaConta(String accessToken) {
+        try {
+            JsonNode profile = restClient.get()
+                    .uri("/users/me/profile")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                    .retrieve()
+                    .body(JsonNode.class);
+            return profile == null ? "" : profile.path("emailAddress").asText("");
+        } catch (RestClientException exception) {
+            throw new GmailIntegrationException("Não foi possível identificar a conta do Gmail conectada.", exception);
+        }
+    }
+
     public List<GmailJobAlert> buscarAlertasDetalhados(String accessToken, Instant recebidosDepoisDe) {
         JsonNode response = buscarListaDeMensagens(accessToken, recebidosDepoisDe);
         List<GmailJobAlert> messages = new ArrayList<>();
