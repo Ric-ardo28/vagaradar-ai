@@ -1,12 +1,13 @@
 # Deploy na Oracle Cloud Always Free
 
-Este guia publica o VagaRadar AI em uma VM Always Free da Oracle Cloud, mantendo a aplicacao e o PostgreSQL
-na mesma maquina. O PostgreSQL nao e exposto na internet; o Caddy publica somente HTTPS e encaminha as requisicoes
-para a aplicacao.
+Este guia publica o VagaRadar AI em uma VM Always Free da Oracle Cloud e usa o Supabase como PostgreSQL gerenciado.
+Assim, a VM executa somente a aplicacao e o Caddy; nenhum banco fica exposto na internet.
 
 ## Recursos usados
 
-- VM `VM.Standard.A1.Flex`: 1 OCPU e 6 GB de RAM (Always Free);
+- VM `VM.Standard.A1.Flex`: 1 OCPU e 6 GB de RAM (Always Free), quando houver capacidade;
+- alternativa para uso pessoal/testes: `VM.Standard.E2.1.Micro` com 1 GB de RAM;
+- projeto Supabase com banco PostgreSQL saudavel;
 - VCN `vagaradar-vcn` e subnet publica `vagaradar-public-subnet`;
 - portas publicas 80 e 443 para o site; 22 e reservado para administracao SSH;
 - Docker Compose com volumes persistentes para PostgreSQL e Caddy.
@@ -28,6 +29,9 @@ Chave SSH: gerar e baixar a chave privada
 ```
 
 Guarde a chave privada baixada em local seguro. Ela nao deve entrar no repositorio nem ser compartilhada.
+
+Se a forma A1 nao tiver capacidade, use `VM.Standard.E2.1.Micro`. Ela e suficiente para o uso pessoal inicial porque
+o banco ficara no Supabase; mantenha o limite de memoria ja definido na composicao Oracle.
 
 ## 2. Preparar o servidor
 
@@ -60,10 +64,14 @@ cp .env.example .env
 chmod 600 .env
 ```
 
-Edite `.env` no servidor e preencha todos os valores reais. Nunca envie esse arquivo ao GitHub. Inclua:
+Edite `.env` no servidor e preencha todos os valores reais. Nunca envie esse arquivo ao GitHub. No painel do Supabase,
+abra **Connect** e copie os dados de conexao do banco (de preferencia o *pooler*). Converta a URL para JDBC e mantenha
+`sslmode=require`. Inclua:
 
 ```text
-DATABASE_PASSWORD=uma-senha-longa-e-unica
+DATABASE_URL=jdbc:postgresql://HOST:PORT/postgres?sslmode=require
+DATABASE_USERNAME=postgres.PROJECT_REF
+DATABASE_PASSWORD=senha-do-banco-do-supabase
 APP_ADMIN_USERNAME=ricardo
 APP_ADMIN_PASSWORD=uma-senha-com-12-ou-mais-caracteres
 OPENAI_API_KEY=sua-chave
@@ -84,6 +92,9 @@ o Caddy obtenha um certificado HTTPS. Antes de iniciar, confirme que as portas 8
 docker compose -f compose.yaml -f compose.oracle.yaml up -d --build
 docker compose -f compose.yaml -f compose.oracle.yaml ps
 ```
+
+A composicao Oracle nao inicia o container `postgres` local: a aplicacao se conecta ao Supabase por conexao
+criptografada, preservando a memoria da VM.
 
 Confira os logs se algum container nao ficar saudavel:
 

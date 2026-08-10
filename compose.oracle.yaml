@@ -1,10 +1,19 @@
 services:
   postgres:
+    profiles: ["local-db"]
     ports: !reset []
 
   app:
     ports: !reset []
+    depends_on: !reset []
     environment:
+      # Em producao, o PostgreSQL fica no Supabase. Os valores devem estar no
+      # arquivo .env do servidor e nunca no repositorio.
+      DATABASE_URL: ${DATABASE_URL:?Configure DATABASE_URL do Supabase em .env}
+      DATABASE_USERNAME: ${DATABASE_USERNAME:?Configure DATABASE_USERNAME do Supabase em .env}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?Configure DATABASE_PASSWORD do Supabase em .env}
+      # Mantem o uso de memoria previsivel em VMs Always Free com 1 GB de RAM.
+      JAVA_TOOL_OPTIONS: -Xms128m -Xmx384m -XX:MaxMetaspaceSize=192m
       SESSION_COOKIE_SECURE: "true"
 
   caddy:
