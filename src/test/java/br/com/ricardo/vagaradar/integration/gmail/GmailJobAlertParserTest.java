@@ -86,6 +86,36 @@ class GmailJobAlertParserTest {
     }
 
     @Test
+    void deveUsarADataDePublicacaoInformadaNoTrechoDaVaga() {
+        GmailJobAlert alert = new GmailJobAlert(
+                "message-1", "thread-1", "Alerta de vagas",
+                """
+                        Desenvolvedor Java Júnior
+                        Publicada há 2 dias
+                        Visualizar vaga: https://www.linkedin.com/jobs/view/123
+                        """,
+                "", Instant.parse("2026-08-08T12:00:00Z")
+        );
+
+        assertThat(parser.extrairVagas(alert)).singleElement()
+                .extracting(VagaCreateRequest::dataPublicacao)
+                .isEqualTo(Instant.parse("2026-08-06T12:00:00Z"));
+    }
+
+    @Test
+    void naoDevePreencherDataDePublicacaoQuandoOEmailNaoInformaAData() {
+        GmailJobAlert alert = new GmailJobAlert(
+                "message-1", "thread-1", "Alerta de vagas",
+                "Desenvolvedor Java Júnior\\nVisualizar vaga: https://www.linkedin.com/jobs/view/123",
+                "", Instant.parse("2026-08-08T12:00:00Z")
+        );
+
+        assertThat(parser.extrairVagas(alert)).singleElement()
+                .extracting(VagaCreateRequest::dataPublicacao)
+                .isNull();
+    }
+
+    @Test
     void deveIgnorarAlertaSemLinkDeVagaDoLinkedIn() {
         GmailJobAlert alert = new GmailJobAlert(
                 "message-1", "thread-1", "Boletim", "Conteúdo sem vagas", "", Instant.now()

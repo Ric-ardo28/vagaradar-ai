@@ -14,4 +14,6 @@ public interface VagaRepository extends JpaRepository<Vaga, Long> {
     Optional<Vaga> findByLink(String link);
 
     List<Vaga> findAllByStatus(StatusVaga status);
+
+    List<Vaga> findAllByOrderByDataEncontradaDesc();
 }

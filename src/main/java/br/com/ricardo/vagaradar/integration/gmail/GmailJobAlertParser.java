@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,14 +26,20 @@ public class GmailJobAlertParser {
             "https?://[^\\s\\\"'<>]+linkedin\\.com/(?:comm/)?jobs/view/(?<jobId>\\d+)[^\\s\\\"'<>]*",
             Pattern.CASE_INSENSITIVE
     );
+    private static final Pattern DATA_RELATIVA_PATTERN = Pattern.compile(
+            "(?i)h[áa]\\s+(?<quantidade>\\d+)\\s+(?<unidade>hora|horas|dia|dias|semana|semanas|m[eê]s|meses)"
+    );
+    private static final Pattern DATA_EXATA_PATTERN = Pattern.compile(
+            "(?i)publicad[ao]\\s+(?:em\\s+)?(?<dia>\\d{1,2})[/-](?<mes>\\d{1,2})[/-](?<ano>\\d{4})"
+    );
 
     public List<VagaCreateRequest> extrairVagas(GmailJobAlert alert) {
         if (ehConfirmacaoDeAlerta(alert.subject())) {
             return List.of();
         }
-        Map<String, String> vagasPorLink = new LinkedHashMap<>();
+        Map<String, VagaExtraida> vagasPorLink = new LinkedHashMap<>();
         extrairLinksDoHtml(alert.html(), vagasPorLink);
-        extrairLinksDoTexto(alert.plainText(), vagasPorLink);
+        extrairLinksDoTexto(alert, vagasPorLink);
 
         return vagasPorLink.entrySet().stream()
                 .map(entry -> criarVaga(alert, entry.getKey(), entry.getValue()))
@@ -41,7 +50,7 @@ public class GmailJobAlertParser {
         return subject != null && subject.toLowerCase().contains("foi criado seu alerta de vaga");
     }
 
-    private void extrairLinksDoHtml(String html, Map<String, String> vagasPorLink) {
+    private void extrairLinksDoHtml(String html, Map<String, VagaExtraida> vagasPorLink) {
         if (html == null || html.isBlank()) {
             return;
         }
@@ -51,12 +60,13 @@ public class GmailJobAlertParser {
             String link = normalizarLink(matcher.group("url"));
             if (link != null) {
                 String titulo = limparTexto(matcher.group("label"));
-                vagasPorLink.putIfAbsent(link, titulo);
+                vagasPorLink.putIfAbsent(link, new VagaExtraida(titulo, null));
             }
         }
     }
 
-    private void extrairLinksDoTexto(String text, Map<String, String> vagasPorLink) {
+    private void extrairLinksDoTexto(GmailJobAlert alert, Map<String, VagaExtraida> vagasPorLink) {
+        String text = alert.plainText();
         if (text == null || text.isBlank()) {
             return;
         }
@@ -67,11 +77,13 @@ public class GmailJobAlertParser {
         while (matcher.find()) {
             String link = normalizarLink(matcher.group());
             if (link != null) {
-                String titulo = extrairTituloAntesDoLink(textoDoAlerta.substring(fimDoLinkAnterior, matcher.start()));
+                String trechoDaVaga = textoDoAlerta.substring(fimDoLinkAnterior, matcher.start());
+                String titulo = extrairTituloAntesDoLink(trechoDaVaga);
+                VagaExtraida vagaExistente = vagasPorLink.get(link);
                 if (!titulo.isBlank()) {
-                    vagasPorLink.put(link, titulo);
+                    vagasPorLink.put(link, new VagaExtraida(titulo, extrairDataPublicacao(trechoDaVaga, alert.receivedAt())));
                 } else {
-                    vagasPorLink.putIfAbsent(link, "");
+                    vagasPorLink.putIfAbsent(link, vagaExistente == null ? new VagaExtraida("", null) : vagaExistente);
                 }
             }
             fimDoLinkAnterior = matcher.end();
@@ -101,10 +113,10 @@ public class GmailJobAlertParser {
                 || texto.startsWith("alerta do linkedin:");
     }
 
-    private VagaCreateRequest criarVaga(GmailJobAlert alert, String link, String tituloDoLink) {
-        String cargo = tituloDoLink == null || tituloDoLink.isBlank()
+    private VagaCreateRequest criarVaga(GmailJobAlert alert, String link, VagaExtraida vagaExtraida) {
+        String cargo = vagaExtraida.titulo() == null || vagaExtraida.titulo().isBlank()
                 ? cargoDoAssunto(alert.subject())
-                : tituloDoLink;
+                : vagaExtraida.titulo();
         String descricao = descricaoDoAlerta(alert);
 
         return new VagaCreateRequest(
@@ -115,8 +127,37 @@ public class GmailJobAlertParser {
                 null,
                 ModeloTrabalho.NAO_INFORMADO,
                 link,
-                alert.receivedAt()
+                vagaExtraida.dataPublicacao()
         );
+    }
+
+    private java.time.Instant extrairDataPublicacao(String trechoDaVaga, java.time.Instant dataRecebimento) {
+        Matcher dataExata = DATA_EXATA_PATTERN.matcher(trechoDaVaga);
+        if (dataExata.find()) {
+            return LocalDate.of(
+                    Integer.parseInt(dataExata.group("ano")),
+                    Integer.parseInt(dataExata.group("mes")),
+                    Integer.parseInt(dataExata.group("dia"))
+            ).atStartOfDay().toInstant(ZoneOffset.UTC);
+        }
+
+        Matcher dataRelativa = DATA_RELATIVA_PATTERN.matcher(trechoDaVaga);
+        if (!dataRelativa.find()) {
+            return null;
+        }
+
+        long quantidade = Long.parseLong(dataRelativa.group("quantidade"));
+        String unidade = dataRelativa.group("unidade").toLowerCase();
+        if (unidade.startsWith("hora")) {
+            return dataRecebimento.minus(quantidade, ChronoUnit.HOURS);
+        }
+        if (unidade.startsWith("dia")) {
+            return dataRecebimento.minus(quantidade, ChronoUnit.DAYS);
+        }
+        if (unidade.startsWith("semana")) {
+            return dataRecebimento.minus(quantidade, ChronoUnit.WEEKS);
+        }
+        return dataRecebimento.atZone(ZoneOffset.UTC).minusMonths(quantidade).toInstant();
     }
 
     private String normalizarLink(String value) {
@@ -163,5 +204,8 @@ public class GmailJobAlertParser {
 
     private String limitar(String value, int tamanhoMaximo) {
         return value.length() <= tamanhoMaximo ? value : value.substring(0, tamanhoMaximo);
+    }
+
+    private record VagaExtraida(String titulo, java.time.Instant dataPublicacao) {
     }
 }

@@ -82,7 +82,7 @@ public class VagaService {
 
     @Transactional(readOnly = true)
     public List<VagaResponse> listar() {
-        return vagaRepository.findAll().stream()
+        return vagaRepository.findAllByOrderByDataEncontradaDesc().stream()
                 .map(this::paraResponse)
                 .toList();
     }
