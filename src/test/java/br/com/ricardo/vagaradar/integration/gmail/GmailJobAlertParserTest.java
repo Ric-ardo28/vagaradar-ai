@@ -134,4 +134,27 @@ class GmailJobAlertParserTest {
 
         assertThat(parser.extrairVagas(alert)).isEmpty();
     }
+
+    @Test
+    void deveIgnorarResumoDeVagasMesmoQuandoPossuiLinkDireto() {
+        GmailJobAlert alert = new GmailJobAlert(
+                "message-1", "thread-1", "Alerta de vagas",
+                "", """
+                        <a href="https://www.linkedin.com/jobs/view/123">5 vagas novas correspondem às suas preferências.</a>
+                        """, Instant.now()
+        );
+
+        assertThat(parser.extrairVagas(alert)).isEmpty();
+    }
+
+    @Test
+    void deveIgnorarLinkParaBuscaGeralDoLinkedIn() {
+        GmailJobAlert alert = new GmailJobAlert(
+                "message-1", "thread-1", "Alerta de vagas",
+                "Ver todas as vagas no LinkedIn: https://www.linkedin.com/comm/jobs/search-results/?keywords=Java",
+                "", Instant.now()
+        );
+
+        assertThat(parser.extrairVagas(alert)).isEmpty();
+    }
 }

@@ -42,6 +42,7 @@ public class GmailJobAlertParser {
         extrairLinksDoTexto(alert, vagasPorLink);
 
         return vagasPorLink.entrySet().stream()
+                .filter(entry -> temTituloDeVaga(entry.getValue().titulo()))
                 .map(entry -> criarVaga(alert, entry.getKey(), entry.getValue()))
                 .toList();
     }
@@ -113,15 +114,28 @@ public class GmailJobAlertParser {
                 || texto.startsWith("alerta do linkedin:");
     }
 
+    private boolean temTituloDeVaga(String value) {
+        String titulo = limparTexto(value);
+        if (titulo.isBlank() || titulo.length() < 3 || titulo.matches("(?i)https?://.*")) {
+            return false;
+        }
+
+        String texto = titulo.toLowerCase();
+        return !texto.matches("\\d+\\s+vagas?\\s+novas?\\s+correspondem\\s+[àa]s\\s+suas\\s+prefer[eê]ncias\\.?")
+                && !texto.startsWith("ver todas as vagas no linkedin")
+                && !texto.startsWith("ver vagas no linkedin")
+                && !texto.startsWith("visualizar vaga")
+                && !texto.startsWith("candidate-se com")
+                && !texto.startsWith("alerta de vagas")
+                && !texto.startsWith("seu alerta de vaga");
+    }
+
     private VagaCreateRequest criarVaga(GmailJobAlert alert, String link, VagaExtraida vagaExtraida) {
-        String cargo = vagaExtraida.titulo() == null || vagaExtraida.titulo().isBlank()
-                ? cargoDoAssunto(alert.subject())
-                : vagaExtraida.titulo();
         String descricao = descricaoDoAlerta(alert);
 
         return new VagaCreateRequest(
                 null,
-                limitar(cargo, 255),
+                limitar(vagaExtraida.titulo(), 255),
                 "Não informado (alerta do LinkedIn)",
                 descricao,
                 null,
@@ -171,14 +185,6 @@ public class GmailJobAlertParser {
             return null;
         }
         return "https://www.linkedin.com/jobs/view/" + matcher.group("jobId");
-    }
-
-    private String cargoDoAssunto(String subject) {
-        String resultado = limparTexto(subject);
-        if (resultado.isBlank()) {
-            return "Vaga encontrada no alerta do LinkedIn";
-        }
-        return resultado;
     }
 
     private String descricaoDoAlerta(GmailJobAlert alert) {

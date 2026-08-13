@@ -2,6 +2,7 @@ package br.com.ricardo.vagaradar.controller;
 
 import br.com.ricardo.vagaradar.config.DiscordProperties;
 import br.com.ricardo.vagaradar.dto.IntegrationStatusResponse;
+import br.com.ricardo.vagaradar.repository.AnaliseVagaRepository;
 import br.com.ricardo.vagaradar.integration.gmail.GmailMessageSummary;
 import br.com.ricardo.vagaradar.integration.gmail.GmailReader;
 import br.com.ricardo.vagaradar.integration.gmail.GmailImportResult;
@@ -33,6 +34,7 @@ public class GmailOAuthController {
     private final EntityManager entityManager;
     private final DiscordProperties discordProperties;
     private final OAuth2AuthorizedClientService authorizedClientService;
+    private final AnaliseVagaRepository analiseVagaRepository;
 
     public GmailOAuthController(
             GmailReader gmailReader,
@@ -40,7 +42,8 @@ public class GmailOAuthController {
             GmailProcessingService gmailProcessingService,
             EntityManager entityManager,
             DiscordProperties discordProperties,
-            OAuth2AuthorizedClientService authorizedClientService
+            OAuth2AuthorizedClientService authorizedClientService,
+            AnaliseVagaRepository analiseVagaRepository
     ) {
         this.gmailReader = gmailReader;
         this.gmailImportService = gmailImportService;
@@ -48,6 +51,7 @@ public class GmailOAuthController {
         this.entityManager = entityManager;
         this.discordProperties = discordProperties;
         this.authorizedClientService = authorizedClientService;
+        this.analiseVagaRepository = analiseVagaRepository;
     }
 
     @GetMapping("/api/gmail/connect")
@@ -79,7 +83,10 @@ public class GmailOAuthController {
                 gmailAccount != null,
                 gmailAccount,
                 discordConfigured,
-                discordProperties.minimumScore()
+                discordProperties.minimumScore(),
+                analiseVagaRepository.findTopByOrderByAnalisadaEmDesc()
+                        .map(analise -> analise.getAnalisadaEm())
+                        .orElse(null)
         );
     }
 

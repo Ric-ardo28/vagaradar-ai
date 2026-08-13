@@ -4,6 +4,7 @@ const elements = {
   waiting: document.querySelector('#new-count'), refresh: document.querySelector('#refresh-button'),
   gmail: document.querySelector('#gmail-button'), process: document.querySelector('#process-button'),
   gmailStatus: document.querySelector('#gmail-status'), discordStatus: document.querySelector('#discord-status'),
+  lastAnalysisStatus: document.querySelector('#last-analysis-status'),
   dialog: document.querySelector('#analysis-dialog'), analysis: document.querySelector('#analysis-content'),
   profileButton: document.querySelector('#profile-button'), profileDialog: document.querySelector('#profile-dialog'),
   profileForm: document.querySelector('#profile-form'), profileMode: document.querySelector('#profile-mode'),
@@ -19,6 +20,9 @@ const formatWorkModel = model => ({ REMOTO:'Remoto', HIBRIDO:'Híbrido', PRESENC
 const formatPublicationDate = date => date
   ? `Publicada em ${new Intl.DateTimeFormat('pt-BR', { dateStyle:'medium' }).format(new Date(date))}`
   : '';
+const formatLastAnalysis = date => new Intl.DateTimeFormat('pt-BR', {
+  dateStyle: 'short', timeStyle: 'short'
+}).format(new Date(date));
 const csrfToken = () => document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=').slice(1).join('=');
 
 async function request(url, options = {}) {
@@ -79,6 +83,7 @@ function renderVacancies(vacancies) {
       <div class="vacancy-actions">
         <span class="badge badge-${vacancy.status.toLowerCase()}">${statusLabel(vacancy.status)}</span>
         ${vacancy.pontuacao == null ? '' : `<span class="badge score-pill">${vacancy.pontuacao}/100</span>`}
+        <a class="vacancy-link" href="${escapeHtml(vacancy.link)}" target="_blank" rel="noopener noreferrer">Ver vaga</a>
         <button class="analyze-button" data-vacancy-id="${vacancy.id}" type="button">${vacancy.status === 'ANALISADA' ? 'Ver análise' : 'Analisar'}</button>
         ${vacancy.status === 'DESCARTADA' ? '' : `<button class="discard-button" data-discard-id="${vacancy.id}" type="button">Descartar</button>`}
       </div>
@@ -129,9 +134,13 @@ async function loadIntegrationStatus() {
       elements.discordStatus.textContent = 'Discord não configurado: informe o webhook para receber alertas.';
       elements.discordStatus.classList.add('warning');
     }
+    elements.lastAnalysisStatus.textContent = status.ultimaAnaliseEm
+      ? `Última análise: ${formatLastAnalysis(status.ultimaAnaliseEm)}.`
+      : 'Última análise: nenhuma vaga analisada ainda.';
   } catch (error) {
     elements.gmailStatus.textContent = 'Não foi possível verificar a conexão do Gmail.';
     elements.discordStatus.textContent = 'Não foi possível verificar a configuração do Discord.';
+    elements.lastAnalysisStatus.textContent = 'Não foi possível verificar a última análise.';
   }
 }
 
@@ -164,6 +173,7 @@ elements.vacancies.addEventListener('click', async event => {
   try {
     showAnalysis(await request(`/api/vagas/${button.dataset.vacancyId}/analise`, { method:'POST' }));
     await loadVacancies();
+    await loadIntegrationStatus();
   } catch (error) { elements.status.textContent = error.message; elements.status.classList.add('error'); }
   finally { button.disabled = false; }
 });
@@ -180,6 +190,7 @@ elements.process.addEventListener('click', async () => {
     const result = await request('/api/gmail/process', { method:'POST' });
     elements.status.textContent = `${result.importacao.vagasImportadas} vaga(s) importada(s) e ${result.vagasAnalisadas} analisada(s).`;
     await loadVacancies();
+    await loadIntegrationStatus();
   } catch (error) {
     elements.status.textContent = error.message.includes('403') ? 'Conecte o Gmail antes de importar.' : error.message;
     elements.status.classList.add('error');
