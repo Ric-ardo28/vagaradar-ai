@@ -1,0 +1,96 @@
+# Deploy ativo na AWS
+
+## Ambiente atual
+
+O VagaRadar AI está hospedado em uma instância virtual Amazon Lightsail:
+
+| Item | Configuração atual |
+| --- | --- |
+| Instância | `vagaradar-app` |
+| Localização | São Paulo, Zone A (`sa-east-1a`) |
+| Sistema operacional | Ubuntu |
+| Plano | Lightsail General purpose — 2 vCPUs, 4 GB de RAM e 80 GB SSD |
+| Rede | Dual-stack (IPv4 e IPv6) |
+| Estado observado em 13/08/2026 | Em execução |
+
+O serviço público está disponível em:
+
+- Painel: https://56.125.167.156.sslip.io/login
+- Health check: https://56.125.167.156.sslip.io/actuator/health
+
+Em 13 de agosto de 2026, o health check respondeu `UP` por HTTPS. O projeto não deve ser iniciado localmente para
+uso normal enquanto esse ambiente remoto estiver ativo.
+
+## Rede e acesso
+
+O firewall da instância permite tráfego de entrada para:
+
+| Porta | Finalidade | Origem atual |
+| --- | --- | --- |
+| TCP 80 | HTTP | Qualquer endereço IPv4 ou IPv6 |
+| TCP 443 | HTTPS | Qualquer endereço IPv4 |
+| TCP 22 | SSH | Qualquer endereço IPv4 ou IPv6, além do SSH no navegador Lightsail |
+
+Não há balanceador ou CDN associado à instância. O endereço IPv4 público atual é `56.125.167.156`, mas ainda **não**
+há um IP estático anexado: ele pode mudar se a instância for parada e iniciada. Como o domínio `sslip.io` depende desse
+IP, a eventual mudança quebraria o acesso público e o redirecionamento OAuth até a atualização das configurações.
+
+O acesso administrativo por SSH usa o usuário `ubuntu` e a chave-padrão da região São Paulo. A chave privada nunca
+deve ser incluída no repositório. Como a porta 22 está aberta para qualquer origem, restrinja-a ao IP administrativo
+confiável quando for possível, preservando uma forma segura de recuperação de acesso.
+
+## Continuidade
+
+Snapshots automáticos estão desativados e não foram identificados snapshots manuais no console. Antes de alterações
+de infraestrutura ou atualização de sistema, crie um snapshot e mantenha um procedimento de recuperação testado.
+
+## Operação segura
+
+As credenciais e as variáveis de produção ficam exclusivamente no servidor ou no gerenciador de segredos. Não copie
+nem versione `.env`, chaves de acesso, credenciais do banco, tokens OAuth, chave da OpenAI ou webhook do Discord.
+
+O ambiente precisa manter, no mínimo:
+
+```text
+DATABASE_URL
+DATABASE_USERNAME
+DATABASE_PASSWORD
+APP_ADMIN_USERNAME
+APP_ADMIN_PASSWORD
+OPENAI_API_KEY
+GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET
+GMAIL_OAUTH_ENABLED=true
+SESSION_COOKIE_SECURE=true
+CADDY_DOMAIN=56.125.167.156.sslip.io
+```
+
+O PostgreSQL deve continuar inacessível pela internet. O endpoint público expõe somente o proxy HTTPS e a aplicação.
+
+## Atualização e verificação
+
+Antes de uma atualização, confirme que o repositório local está limpo e que os testes passam:
+
+```bash
+mvn test
+```
+
+No ambiente AWS, siga o processo de implantação configurado no servidor. Depois, confirme:
+
+```text
+https://56.125.167.156.sslip.io/actuator/health
+https://56.125.167.156.sslip.io/login
+```
+
+O primeiro endereço deve responder `UP`; o segundo deve apresentar a tela de autenticação. Mudanças em OAuth exigem
+que o URI autorizado no Google Cloud continue apontando para:
+
+```text
+https://56.125.167.156.sslip.io/login/oauth2/code/google
+```
+
+## Nota sobre os arquivos do repositório
+
+O arquivo `compose.oracle.yaml` ainda tem esse nome por legado, mas contém a sobreposição de produção com Caddy,
+HTTPS e banco PostgreSQL externo. Ele não significa que a aplicação esteja hospedada na Oracle. Uma eventual troca
+de nome deve ser feita em uma alteração própria, coordenada com o processo já usado no servidor AWS.

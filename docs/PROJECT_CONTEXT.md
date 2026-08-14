@@ -24,9 +24,17 @@ sobreposição personalizada no PostgreSQL ou removê-la para restaurar o padrã
 
 ## Situação de publicação
 
-O projeto possui composições Docker e guias para Koyeb e Oracle Cloud. A publicação na Oracle está pendente porque a
-região de São Paulo não tem capacidade disponível para a VM Always Free escolhida. As melhorias que dependem de um
-servidor público com HTTPS estão registradas em [IMPLEMENTACOES_FUTURAS.md](IMPLEMENTACOES_FUTURAS.md).
+O VagaRadar AI está publicado na AWS, em uma instância Amazon Lightsail chamada `vagaradar-app`, na região
+São Paulo (`sa-east-1a`). A instância está em execução e oferece 2 vCPUs, 4 GB de RAM e 80 GB SSD. O acesso público
+é feito por HTTPS em `https://56.125.167.156.sslip.io/login`. Em 13 de agosto de 2026, o health check público
+`/actuator/health` respondeu `UP`.
+
+A borda pública permite HTTP (80), HTTPS (443) e SSH (22); não há balanceador, CDN ou snapshots automáticos
+configurados. O projeto mantém composições Docker e um guia operacional para esse ambiente; o guia da Oracle Cloud
+permanece somente como referência histórica e não representa a infraestrutura ativa.
+
+As melhorias que dependem de um servidor público com HTTPS estão registradas em
+[IMPLEMENTACOES_FUTURAS.md](IMPLEMENTACOES_FUTURAS.md).
 
 No Google Cloud, o OAuth está em modo de teste: apenas contas incluídas como usuários de teste podem conectar o Gmail.
 Para uso aberto a qualquer conta Google, será necessária a publicação e verificação do aplicativo OAuth.

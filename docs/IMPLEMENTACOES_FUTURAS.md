@@ -16,12 +16,12 @@ Este documento reúne ideias aprovadas para o VagaRadar AI que ainda não serão
 
 **Dependências:**
 
-- Aplicação publicada em uma VM ou servidor com endereço HTTPS público.
-- VM da Oracle Cloud disponível e configurada, ou outro provedor escolhido.
+- Aplicação publicada em uma VM ou servidor com endereço HTTPS público (requisito já atendido pela AWS).
 - Projeto no Google Cloud com Pub/Sub habilitado.
 - Renovação periódica da assinatura de monitoramento do Gmail.
 
-**Situação:** aguardando a resolução da VM da Oracle Cloud. Até lá, a verificação programada continua como alternativa.
+**Situação:** a hospedagem pública na AWS já está disponível. Falta configurar o Pub/Sub, o endpoint seguro e a
+renovação do monitoramento Gmail. Até essa implementação, a verificação programada continua como alternativa.
 
 ## Próximas ideias a avaliar
 

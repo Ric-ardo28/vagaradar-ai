@@ -131,11 +131,20 @@ fornecida pela plataforma e deve usar `SESSION_COOKIE_SECURE=true` em produção
 O plano gratuito entra em repouso após uma hora sem tráfego, portanto não é adequado para garantir a execução do
 agendador do Gmail. Mantenha `GMAIL_SCHEDULER_ENABLED=false` e importe as vagas manualmente pelo painel.
 
-### Deploy gratuito na Oracle Cloud
+### Deploy ativo na AWS
 
-Para manter o backend sempre disponível em uso pessoal, a opção principal é a VM Always Free da Oracle Cloud.
-O guia, a composição Docker com HTTPS e as configurações do OAuth estão em [docs/DEPLOY_ORACLE.md](docs/DEPLOY_ORACLE.md).
-Ele usa Caddy, mantém o PostgreSQL fora da internet e não requer versionar segredos.
+O ambiente de produção ativo está hospedado na AWS e pode ser acessado em
+[https://56.125.167.156.sslip.io/login](https://56.125.167.156.sslip.io/login).
+O health check público é [https://56.125.167.156.sslip.io/actuator/health](https://56.125.167.156.sslip.io/actuator/health).
+
+O guia operacional está em [docs/DEPLOY_AWS.md](docs/DEPLOY_AWS.md). A aplicação está em uma instância Amazon
+Lightsail na região de São Paulo, protegida por HTTPS; o PostgreSQL permanece fora da internet e os segredos continuam
+exclusivos do ambiente remoto. A composição de produção existente ainda se chama `compose.oracle.yaml` por herança do
+projeto, mas o nome do arquivo não identifica o provedor ativo. Não a renomeie diretamente no servidor sem ajustar o
+processo de implantação.
+
+O antigo guia da Oracle Cloud foi preservado apenas como referência histórica em
+[docs/DEPLOY_ORACLE.md](docs/DEPLOY_ORACLE.md); ele não descreve o ambiente em operação.
 
 ## Integrações
 

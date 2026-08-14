@@ -1,4 +1,8 @@
-# Deploy na Oracle Cloud Always Free
+# Referência histórica: deploy na Oracle Cloud Always Free
+
+> A Oracle Cloud não é o ambiente ativo do VagaRadar AI. A implantação atual está na AWS; consulte
+> [DEPLOY_AWS.md](DEPLOY_AWS.md) para o procedimento operacional atual. Este arquivo foi preservado somente para
+> registrar a alternativa de infraestrutura anteriormente avaliada.
 
 Este guia publica o VagaRadar AI em uma VM Always Free da Oracle Cloud e usa o Supabase como PostgreSQL gerenciado.
 Assim, a VM executa somente a aplicacao e o Caddy; nenhum banco fica exposto na internet.

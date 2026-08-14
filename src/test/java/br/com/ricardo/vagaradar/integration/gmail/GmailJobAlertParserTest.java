@@ -157,4 +157,18 @@ class GmailJobAlertParserTest {
 
         assertThat(parser.extrairVagas(alert)).isEmpty();
     }
+
+    @Test
+    void deveIgnorarLinkDeVagaQuandoORotuloEUmAtalhoParaTodasAsVagas() {
+        GmailJobAlert alert = new GmailJobAlert(
+                "message-1", "thread-1", "Alerta de vagas",
+                "", """
+                        <a href="https://www.linkedin.com/jobs/view/123?trackingId=abc">
+                          Ver todas as vagas https://www.linkedin.com/jobs/search-results/?keywords=estagio+backend
+                        </a>
+                        """, Instant.now()
+        );
+
+        assertThat(parser.extrairVagas(alert)).isEmpty();
+    }
 }

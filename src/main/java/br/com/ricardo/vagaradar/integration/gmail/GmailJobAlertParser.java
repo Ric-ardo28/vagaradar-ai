@@ -122,7 +122,7 @@ public class GmailJobAlertParser {
 
         String texto = titulo.toLowerCase();
         return !texto.matches("\\d+\\s+vagas?\\s+novas?\\s+correspondem\\s+[àa]s\\s+suas\\s+prefer[eê]ncias\\.?")
-                && !texto.startsWith("ver todas as vagas no linkedin")
+                && !texto.startsWith("ver todas as vagas")
                 && !texto.startsWith("ver vagas no linkedin")
                 && !texto.startsWith("visualizar vaga")
                 && !texto.startsWith("candidate-se com")
