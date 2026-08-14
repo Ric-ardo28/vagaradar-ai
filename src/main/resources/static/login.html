@@ -15,6 +15,7 @@
     <h1>Entre no seu painel.</h1>
     <p class="login-copy">Este painel contém suas vagas, análises e conexão Gmail.</p>
     <p id="login-error" class="error login-error" hidden>Usuário ou senha inválidos.</p>
+    <p id="login-session-renewed" class="error login-error" hidden>Sua sessão foi renovada após a atualização. Entre novamente.</p>
     <form id="login-form" method="post" action="/login">
       <input type="hidden" id="csrf-token" name="_csrf">
       <label>Usuário<input name="username" autocomplete="username" required autofocus></label>

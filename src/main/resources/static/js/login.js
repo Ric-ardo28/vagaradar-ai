@@ -4,3 +4,4 @@ if (csrfToken) document.querySelector('#csrf-token').value = decodeURIComponent(
 
 const query = new URLSearchParams(window.location.search);
 if (query.has('error')) document.querySelector('#login-error').hidden = false;
+if (query.get('session') === 'renewed') document.querySelector('#login-session-renewed').hidden = false;

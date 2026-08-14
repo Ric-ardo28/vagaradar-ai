@@ -85,6 +85,9 @@ public class OAuthSecurityConfig {
                         .referrerPolicy(referrer -> referrer.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN))
                         .httpStrictTransportSecurity(Customizer.withDefaults())
                 )
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .accessDeniedHandler(new LoginCsrfAccessDeniedHandler(csrfRepository))
+                )
                 .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class);
 
         OAuth2AuthorizedClientService authorizedClientService = authorizedClientServiceProvider.getIfAvailable();
