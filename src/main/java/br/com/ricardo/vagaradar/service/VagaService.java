@@ -3,9 +3,11 @@ package br.com.ricardo.vagaradar.service;
 import br.com.ricardo.vagaradar.dto.VagaCreateRequest;
 import br.com.ricardo.vagaradar.dto.VagaResponse;
 import br.com.ricardo.vagaradar.dto.AnaliseVagaResponse;
+import br.com.ricardo.vagaradar.dto.PaginaVagasResponse;
 import br.com.ricardo.vagaradar.entity.AnaliseVaga;
 import br.com.ricardo.vagaradar.entity.Vaga;
 import br.com.ricardo.vagaradar.entity.StatusVaga;
+import br.com.ricardo.vagaradar.entity.ModeloTrabalho;
 import br.com.ricardo.vagaradar.exception.VagaNaoEncontradaException;
 import br.com.ricardo.vagaradar.exception.VagaDuplicadaException;
 import br.com.ricardo.vagaradar.integration.openai.OpenAiAnalysisResult;
@@ -15,6 +17,8 @@ import br.com.ricardo.vagaradar.repository.AnaliseVagaRepository;
 import br.com.ricardo.vagaradar.repository.VagaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -81,10 +85,27 @@ public class VagaService {
     }
 
     @Transactional(readOnly = true)
-    public List<VagaResponse> listar() {
-        return vagaRepository.findAllByOrderByDataEncontradaDesc().stream()
-                .map(this::paraResponse)
-                .toList();
+    public PaginaVagasResponse listarPaginado(
+            int pagina,
+            String busca,
+            ModeloTrabalho modeloTrabalho,
+            StatusVaga status,
+            Integer notaMinima
+    ) {
+        Page<VagaResponse> resultado = vagaRepository.buscarPaginado(
+                normalizarBusca(busca), modeloTrabalho, status, notaMinima, PageRequest.of(pagina, 25)
+        );
+        return new PaginaVagasResponse(
+                resultado.getContent(), resultado.getNumber(), resultado.getSize(),
+                resultado.getTotalElements(), resultado.getTotalPages(),
+                vagaRepository.count(),
+                vagaRepository.countByStatus(StatusVaga.ANALISADA),
+                vagaRepository.countByStatus(StatusVaga.RECEBIDA)
+        );
+    }
+
+    private String normalizarBusca(String busca) {
+        return busca == null || busca.isBlank() ? null : busca.trim();
     }
 
     @Transactional(readOnly = true)

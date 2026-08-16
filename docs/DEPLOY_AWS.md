@@ -94,3 +94,44 @@ https://56.125.167.156.sslip.io/login/oauth2/code/google
 O arquivo `compose.oracle.yaml` ainda tem esse nome por legado, mas contém a sobreposição de produção com Caddy,
 HTTPS e banco PostgreSQL externo. Ele não significa que a aplicação esteja hospedada na Oracle. Uma eventual troca
 de nome deve ser feita em uma alteração própria, coordenada com o processo já usado no servidor AWS.
+
+## Publicação automática pelo GitHub
+
+O arquivo `.github/workflows/deploy-production.yml` publica automaticamente na AWS a cada `push` para a branch
+`main`. Ele executa os testes primeiro; se qualquer teste falhar, a produção não é alterada.
+
+O workflow copia apenas o código versionado para `~/vagaradar-ai`, preserva o arquivo `.env` existente no servidor e
+recria os containers. Ao final, ele aguarda o health check do container da aplicação ficar `healthy`.
+
+### Configuração única
+
+Crie uma chave SSH exclusiva para o GitHub Actions no seu computador. No PowerShell:
+
+```powershell
+ssh-keygen -t ed25519 -C "github-actions-vagaradar" -f "$env:USERPROFILE\.ssh\vagaradar_github_actions"
+```
+
+Não defina senha para essa chave: o GitHub Actions não consegue digitá-la. Guarde o arquivo privado com cuidado e
+nunca o versione.
+
+Copie o conteúdo do arquivo `vagaradar_github_actions.pub` e, no terminal SSH da AWS, execute substituindo o texto
+entre aspas pela chave pública completa:
+
+```bash
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+echo 'COLE_A_CHAVE_PUBLICA_AQUI' >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+```
+
+No repositório GitHub, acesse **Settings → Secrets and variables → Actions** e crie estes *Repository secrets*:
+
+| Segredo | Valor |
+| --- | --- |
+| `AWS_HOST` | IP público atual da VM, por exemplo `56.125.167.156` |
+| `AWS_SSH_PRIVATE_KEY` | Conteúdo completo do arquivo privado `vagaradar_github_actions` |
+| `AWS_SSH_KNOWN_HOSTS` | Resultado de `ssh-keyscan -H 56.125.167.156` executado no seu computador |
+
+Depois da configuração, `git push origin main` executará testes e, se tudo estiver correto, fará a publicação.
+Em **Actions** no GitHub é possível acompanhar cada etapa e ler os logs. Se o IP público da Lightsail mudar, atualize
+`AWS_HOST`, `AWS_SSH_KNOWN_HOSTS`, `CADDY_DOMAIN` e as configurações de domínio/OAuth relacionadas.

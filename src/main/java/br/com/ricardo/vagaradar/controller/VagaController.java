@@ -3,6 +3,9 @@ package br.com.ricardo.vagaradar.controller;
 import br.com.ricardo.vagaradar.dto.VagaCreateRequest;
 import br.com.ricardo.vagaradar.dto.VagaResponse;
 import br.com.ricardo.vagaradar.dto.AnaliseVagaResponse;
+import br.com.ricardo.vagaradar.dto.PaginaVagasResponse;
+import br.com.ricardo.vagaradar.entity.ModeloTrabalho;
+import br.com.ricardo.vagaradar.entity.StatusVaga;
 import br.com.ricardo.vagaradar.service.VagaService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -12,9 +15,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/vagas")
@@ -32,8 +34,14 @@ public class VagaController {
     }
 
     @GetMapping
-    public List<VagaResponse> listar() {
-        return vagaService.listar();
+    public PaginaVagasResponse listar(
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(required = false) String busca,
+            @RequestParam(required = false) ModeloTrabalho modeloTrabalho,
+            @RequestParam(required = false) StatusVaga status,
+            @RequestParam(required = false) Integer notaMinima
+    ) {
+        return vagaService.listarPaginado(Math.max(pagina, 0), busca, modeloTrabalho, status, notaMinima);
     }
 
     @GetMapping("/{id}")

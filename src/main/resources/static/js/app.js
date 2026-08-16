@@ -10,9 +10,14 @@ const elements = {
   profileForm: document.querySelector('#profile-form'), profileMode: document.querySelector('#profile-mode'),
   profileError: document.querySelector('#profile-error'), profileReset: document.querySelector('#profile-reset'),
   search: document.querySelector('#search-filter'), workModel: document.querySelector('#work-model-filter'),
-  vacancyStatus: document.querySelector('#status-filter'), score: document.querySelector('#score-filter')
+  vacancyStatus: document.querySelector('#status-filter'), score: document.querySelector('#score-filter'),
+  pagination: document.querySelector('#pagination'), previousPage: document.querySelector('#previous-page'),
+  nextPage: document.querySelector('#next-page'), paginationSummary: document.querySelector('#pagination-summary')
 };
-let allVacancies = [];
+let totalVacancies = 0;
+let currentPage = 1;
+const pageSize = 25;
+let searchTimer;
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#039;', '"':'&quot;' }[char]));
 const statusLabel = status => ({ RECEBIDA:'Aguardando análise', ANALISADA:'Analisada', DESCARTADA:'Descartada' }[status] ?? status);
@@ -61,11 +66,10 @@ async function openProfile() {
   } finally { elements.profileButton.disabled = false; }
 }
 
-function updateStats(vacancies) {
-  const analyzed = vacancies.filter(vacancy => vacancy.status === 'ANALISADA').length;
-  elements.total.textContent = vacancies.length;
-  elements.analyzed.textContent = analyzed;
-  elements.waiting.textContent = vacancies.filter(vacancy => vacancy.status === 'RECEBIDA').length;
+function updateStats(page) {
+  elements.total.textContent = page.totalMonitoradas;
+  elements.analyzed.textContent = page.totalAnalisadas;
+  elements.waiting.textContent = page.totalPendentes;
 }
 
 function renderVacancies(vacancies) {
@@ -91,24 +95,32 @@ function renderVacancies(vacancies) {
 }
 
 function applyFilters() {
-  const term = elements.search.value.trim().toLocaleLowerCase('pt-BR');
-  const score = Number(elements.score.value || 0);
-  const filtered = allVacancies.filter(vacancy =>
-    (!term || `${vacancy.cargo} ${vacancy.empresa}`.toLocaleLowerCase('pt-BR').includes(term)) &&
-    (!elements.workModel.value || vacancy.modeloTrabalho === elements.workModel.value) &&
-    (!elements.vacancyStatus.value || vacancy.status === elements.vacancyStatus.value) &&
-    (!score || (vacancy.pontuacao != null && vacancy.pontuacao >= score))
-  );
-  renderVacancies(filtered);
-  elements.status.textContent = `${filtered.length} de ${allVacancies.length} vaga(s) exibida(s).`;
+  currentPage = 1;
+  loadVacancies();
 }
 
 async function loadVacancies() {
   elements.status.textContent = 'Atualizando...';
   try {
-    allVacancies = await request('/api/vagas');
-    updateStats(allVacancies);
-    applyFilters();
+    const params = new URLSearchParams({ pagina: String(currentPage - 1) });
+    if (elements.search.value.trim()) params.set('busca', elements.search.value.trim());
+    if (elements.workModel.value) params.set('modeloTrabalho', elements.workModel.value);
+    if (elements.vacancyStatus.value) params.set('status', elements.vacancyStatus.value);
+    if (elements.score.value) params.set('notaMinima', elements.score.value);
+    const page = await request(`/api/vagas?${params}`);
+    totalVacancies = page.totalElementos;
+    currentPage = page.pagina + 1;
+    renderVacancies(page.vagas);
+    updateStats(page);
+    elements.pagination.hidden = page.totalPaginas <= 1;
+    elements.previousPage.disabled = currentPage === 1;
+    elements.nextPage.disabled = currentPage === page.totalPaginas;
+    const first = totalVacancies ? ((currentPage - 1) * pageSize) + 1 : 0;
+    const last = Math.min(currentPage * pageSize, totalVacancies);
+    elements.paginationSummary.textContent = totalVacancies
+      ? `${first}–${last} de ${totalVacancies} vagas · Página ${currentPage} de ${page.totalPaginas}`
+      : '';
+    elements.status.textContent = `${totalVacancies} vaga(s) encontrada(s).`;
   } catch (error) {
     elements.status.textContent = error.message;
     elements.status.classList.add('error');
@@ -225,9 +237,21 @@ elements.profileReset.addEventListener('click', async () => {
     elements.profileMode.textContent = 'Perfil-base padrão restaurado.';
   } catch (error) { elements.profileError.textContent = error.message; }
 });
-for (const filter of [elements.search, elements.workModel, elements.vacancyStatus, elements.score]) {
-  filter.addEventListener(filter === elements.search ? 'input' : 'change', applyFilters);
+elements.search.addEventListener('input', () => {
+  window.clearTimeout(searchTimer);
+  searchTimer = window.setTimeout(applyFilters, 300);
+});
+for (const filter of [elements.workModel, elements.vacancyStatus, elements.score]) {
+  filter.addEventListener('change', applyFilters);
 }
+elements.previousPage.addEventListener('click', () => {
+  currentPage--;
+  loadVacancies();
+});
+elements.nextPage.addEventListener('click', () => {
+  currentPage++;
+  loadVacancies();
+});
 document.querySelector('#dialog-close').addEventListener('click', () => elements.dialog.close());
 document.querySelector('#profile-dialog-close').addEventListener('click', () => elements.profileDialog.close());
 loadVacancies();

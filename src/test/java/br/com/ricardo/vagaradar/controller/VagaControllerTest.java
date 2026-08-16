@@ -1,6 +1,7 @@
 package br.com.ricardo.vagaradar.controller;
 
 import br.com.ricardo.vagaradar.dto.VagaResponse;
+import br.com.ricardo.vagaradar.dto.PaginaVagasResponse;
 import br.com.ricardo.vagaradar.entity.ModeloTrabalho;
 import br.com.ricardo.vagaradar.entity.StatusVaga;
 import br.com.ricardo.vagaradar.service.VagaService;
@@ -38,12 +39,14 @@ class VagaControllerTest {
                 "São Paulo", ModeloTrabalho.HIBRIDO, "https://www.linkedin.com/jobs/view/123",
                 Instant.parse("2026-08-07T12:00:00Z"), Instant.parse("2026-08-07T13:00:00Z"), StatusVaga.RECEBIDA, null
         );
-        given(vagaService.listar()).willReturn(List.of(vaga));
+        given(vagaService.listarPaginado(0, null, null, null, null))
+                .willReturn(new PaginaVagasResponse(List.of(vaga), 0, 25, 1, 1, 1, 0, 1));
 
         mockMvc.perform(get("/api/vagas"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].cargo").value("Desenvolvedor Java"));
+                .andExpect(jsonPath("$.vagas[0].id").value(1))
+                .andExpect(jsonPath("$.vagas[0].cargo").value("Desenvolvedor Java"))
+                .andExpect(jsonPath("$.tamanho").value(25));
     }
 
     @Test
