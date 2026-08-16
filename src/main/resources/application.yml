@@ -49,6 +49,10 @@ openai:
 discord:
   webhook-url: ${DISCORD_WEBHOOK_URL:}
   minimum-score: ${DISCORD_MINIMUM_SCORE:70}
+  outbox:
+    enabled: ${DISCORD_OUTBOX_ENABLED:true}
+    fixed-delay: ${DISCORD_OUTBOX_FIXED_DELAY:PT30S}
+    initial-delay: ${DISCORD_OUTBOX_INITIAL_DELAY:PT10S}
 
 gmail:
   oauth-enabled: ${GMAIL_OAUTH_ENABLED:false}

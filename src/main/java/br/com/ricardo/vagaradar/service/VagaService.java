@@ -12,7 +12,6 @@ import br.com.ricardo.vagaradar.exception.VagaNaoEncontradaException;
 import br.com.ricardo.vagaradar.exception.VagaDuplicadaException;
 import br.com.ricardo.vagaradar.integration.openai.OpenAiAnalysisResult;
 import br.com.ricardo.vagaradar.integration.openai.OpenAiVagaAnalyzer;
-import br.com.ricardo.vagaradar.integration.discord.DiscordNotifier;
 import br.com.ricardo.vagaradar.repository.AnaliseVagaRepository;
 import br.com.ricardo.vagaradar.repository.VagaRepository;
 import org.springframework.stereotype.Service;
@@ -30,18 +29,18 @@ public class VagaService {
     private final VagaRepository vagaRepository;
     private final AnaliseVagaRepository analiseVagaRepository;
     private final OpenAiVagaAnalyzer openAiVagaAnalyzer;
-    private final DiscordNotifier discordNotifier;
+    private final DiscordNotificationOutboxService notificationOutboxService;
 
     public VagaService(
             VagaRepository vagaRepository,
             AnaliseVagaRepository analiseVagaRepository,
             OpenAiVagaAnalyzer openAiVagaAnalyzer,
-            DiscordNotifier discordNotifier
+            DiscordNotificationOutboxService notificationOutboxService
     ) {
         this.vagaRepository = vagaRepository;
         this.analiseVagaRepository = analiseVagaRepository;
         this.openAiVagaAnalyzer = openAiVagaAnalyzer;
-        this.discordNotifier = discordNotifier;
+        this.notificationOutboxService = notificationOutboxService;
     }
 
     @Transactional
@@ -152,7 +151,7 @@ public class VagaService {
         );
         AnaliseVaga analiseSalva = analiseVagaRepository.save(analise);
         vaga.marcarComoAnalisada();
-        discordNotifier.notificarAnalise(vaga, analiseSalva);
+        notificationOutboxService.registrarSeElegivel(analiseSalva);
         return paraAnaliseResponse(analiseSalva);
     }
 

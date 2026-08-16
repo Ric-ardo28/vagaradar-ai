@@ -150,6 +150,7 @@ O antigo guia da Oracle Cloud foi preservado apenas como referência histórica 
 
 - OpenAI: obrigatória apenas para gerar análises; usa `OPENAI_API_KEY`.
 - Discord: opcional; configure `DISCORD_WEBHOOK_URL` para receber alertas.
+- Discord: os alertas elegíveis são registrados no banco após a análise e enviados em segundo plano. Falhas no Discord não desfazem a análise; o sistema faz até cinco tentativas com espera crescente.
 - Gmail: leitura de alertas via OAuth 2.0 do Google; exige `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` locais.
 
 ## Conectar Gmail
