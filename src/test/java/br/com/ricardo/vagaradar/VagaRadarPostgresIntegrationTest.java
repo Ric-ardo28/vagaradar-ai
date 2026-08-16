@@ -2,7 +2,10 @@ package br.com.ricardo.vagaradar;
 
 import br.com.ricardo.vagaradar.entity.ModeloTrabalho;
 import br.com.ricardo.vagaradar.entity.Vaga;
+import br.com.ricardo.vagaradar.dto.VagaResponse;
 import br.com.ricardo.vagaradar.repository.VagaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -79,5 +82,14 @@ class VagaRadarPostgresIntegrationTest {
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).contains("UP");
+    }
+
+    @Test
+    void deveBuscarPaginaSemFiltroNoPostgres() {
+        Page<VagaResponse> pagina = vagaRepository.buscarPaginado(
+                null, null, null, null, PageRequest.of(0, 25)
+        );
+
+        assertThat(pagina.getSize()).isEqualTo(25);
     }
 }

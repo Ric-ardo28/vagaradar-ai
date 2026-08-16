@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -105,7 +106,7 @@ public class VagaService {
     }
 
     private String normalizarBusca(String busca) {
-        return busca == null || busca.isBlank() ? null : busca.trim();
+        return busca == null || busca.isBlank() ? null : busca.trim().toLowerCase(Locale.forLanguageTag("pt-BR"));
     }
 
     @Transactional(readOnly = true)
