@@ -32,8 +32,8 @@ public interface VagaRepository extends JpaRepository<Vaga, Long> {
             )
             from Vaga v
             left join AnaliseVaga a on a.vaga = v
-            where (:busca is null or lower(v.cargo) like concat('%', :busca, '%')
-                   or lower(v.empresa) like concat('%', :busca, '%'))
+            where (cast(:busca as string) is null or lower(v.cargo) like concat('%', cast(:busca as string), '%')
+                   or lower(v.empresa) like concat('%', cast(:busca as string), '%'))
               and (:modeloTrabalho is null or v.modeloTrabalho = :modeloTrabalho)
               and (:status is null or v.status = :status)
               and (:notaMinima is null or a.pontuacao >= :notaMinima)
@@ -43,8 +43,8 @@ public interface VagaRepository extends JpaRepository<Vaga, Long> {
                     select count(v)
                     from Vaga v
                     left join AnaliseVaga a on a.vaga = v
-                    where (:busca is null or lower(v.cargo) like concat('%', :busca, '%')
-                           or lower(v.empresa) like concat('%', :busca, '%'))
+                    where (cast(:busca as string) is null or lower(v.cargo) like concat('%', cast(:busca as string), '%')
+                           or lower(v.empresa) like concat('%', cast(:busca as string), '%'))
                       and (:modeloTrabalho is null or v.modeloTrabalho = :modeloTrabalho)
                       and (:status is null or v.status = :status)
                       and (:notaMinima is null or a.pontuacao >= :notaMinima)
