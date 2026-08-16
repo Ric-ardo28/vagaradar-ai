@@ -26,6 +26,11 @@ jobs:
           java-version: '21'
           cache: maven
       - name: Executar testes
+        env:
+          APP_ADMIN_USERNAME: test-admin
+          APP_ADMIN_PASSWORD: test-password-123
+          GOOGLE_CLIENT_ID: test-google-client-id
+          GOOGLE_CLIENT_SECRET: test-google-client-secret
         run: mvn --batch-mode test
 
   producao:
