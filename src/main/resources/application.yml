@@ -40,6 +40,7 @@ app:
   security:
     admin-username: ${APP_ADMIN_USERNAME:}
     admin-password: ${APP_ADMIN_PASSWORD:}
+    extension-api-token: ${EXTENSION_API_TOKEN:}
 
 openai:
   api-key: ${OPENAI_API_KEY:}

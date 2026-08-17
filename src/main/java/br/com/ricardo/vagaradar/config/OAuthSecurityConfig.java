@@ -37,6 +37,11 @@ public class OAuthSecurityConfig {
     }
 
     @Bean
+    ExtensionApiTokenFilter extensionApiTokenFilter(AppSecurityProperties properties) {
+        return new ExtensionApiTokenFilter(properties);
+    }
+
+    @Bean
     UserDetailsService userDetailsService(AppSecurityProperties properties, PasswordEncoder passwordEncoder) {
         if (properties.adminUsername() == null || properties.adminUsername().isBlank()
                 || properties.adminPassword() == null || properties.adminPassword().length() < 12) {
@@ -60,7 +65,8 @@ public class OAuthSecurityConfig {
     SecurityFilterChain oauthSecurityFilterChain(
             HttpSecurity http,
             ObjectProvider<OAuth2AuthorizedClientService> authorizedClientServiceProvider,
-            ObjectProvider<OAuth2AuthorizationRequestResolver> authorizationRequestResolverProvider
+            ObjectProvider<OAuth2AuthorizationRequestResolver> authorizationRequestResolverProvider,
+            ExtensionApiTokenFilter extensionApiTokenFilter
     ) throws Exception {
         CookieCsrfTokenRepository csrfRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         csrfRepository.setCookiePath("/");
@@ -69,10 +75,12 @@ public class OAuthSecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfRepository)
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        .ignoringRequestMatchers("/api/extensao/**")
                 )
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/login", "/login.html", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/favicon.svg", "/actuator/health").permitAll()
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers("/api/extensao/**").hasRole("EXTENSION")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.loginPage("/login").defaultSuccessUrl("/", true).permitAll())
@@ -89,6 +97,8 @@ public class OAuthSecurityConfig {
                         .accessDeniedHandler(new LoginCsrfAccessDeniedHandler(csrfRepository))
                 )
                 .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class);
+
+        http.addFilterBefore(extensionApiTokenFilter, CsrfFilter.class);
 
         OAuth2AuthorizedClientService authorizedClientService = authorizedClientServiceProvider.getIfAvailable();
         OAuth2AuthorizationRequestResolver authorizationRequestResolver = authorizationRequestResolverProvider.getIfAvailable();

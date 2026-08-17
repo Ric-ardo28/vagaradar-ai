@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="style.css"><title>Configurar VagaRadar</title></head>
+<body>
+  <main>
+    <p class="eyebrow">VAGARADAR AI</p><h1>Configuração</h1>
+    <form id="form">
+      <label>URL do VagaRadar<input id="api-url" type="url" required placeholder="https://seu-dominio.com"></label>
+      <label>Token da extensão<input id="api-token" type="password" required minlength="24" autocomplete="off"></label>
+      <button type="submit">Salvar configuração</button>
+      <p id="status" role="status"></p>
+    </form>
+  </main>
+  <script src="options.js"></script>
+</body>
+</html>
