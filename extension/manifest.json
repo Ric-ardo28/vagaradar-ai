@@ -16,7 +16,7 @@
   "optional_host_permissions": ["http://localhost/*", "https://*/*"],
   "content_scripts": [
     {
-      "matches": ["https://www.linkedin.com/jobs/*"],
+      "matches": ["https://www.linkedin.com/jobs/view/*"],
       "js": ["content.js"]
     }
   ]
