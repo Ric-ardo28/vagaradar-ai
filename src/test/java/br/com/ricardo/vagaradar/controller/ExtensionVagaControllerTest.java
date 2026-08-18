@@ -35,7 +35,7 @@ class ExtensionVagaControllerTest {
     @Test
     void deveCriarEAnalisarVagaEnviadaPelaExtensao() throws Exception {
         VagaResponse vaga = new VagaResponse(8L, "123", "Java Júnior", "Empresa", "Java e Spring", "São Paulo",
-                ModeloTrabalho.HIBRIDO, "https://www.linkedin.com/jobs/view/123", null, Instant.now(), StatusVaga.RECEBIDA, null);
+                ModeloTrabalho.HIBRIDO, "https://www.linkedin.com/jobs/view/123", null, Instant.now(), null, StatusVaga.RECEBIDA, null);
         AnaliseVagaResponse analise = new AnaliseVagaResponse(4L, 8L, 82, NivelCompatibilidade.ALTA,
                 "Java", "Cloud", "Candidatar", Instant.now());
         given(vagaService.criar(any())).willReturn(vaga);

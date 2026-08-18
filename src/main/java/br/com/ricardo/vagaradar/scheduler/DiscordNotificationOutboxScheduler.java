@@ -17,6 +17,8 @@ public class DiscordNotificationOutboxScheduler {
 
     @Scheduled(fixedDelayString = "${discord.outbox.fixed-delay:PT30S}", initialDelayString = "${discord.outbox.initial-delay:PT10S}")
     public void enviarPendentes() {
-        outboxService.processarPendentes();
+        while (outboxService.processarProxima()) {
+            // Cada chamada passa pelo proxy Spring e abre sua própria transação.
+        }
     }
 }

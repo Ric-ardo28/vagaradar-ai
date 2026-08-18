@@ -16,6 +16,7 @@ public record VagaResponse(
         String link,
         Instant dataPublicacao,
         Instant dataEncontrada,
+        Instant analisadaEm,
         StatusVaga status,
         Integer pontuacao
 ) {

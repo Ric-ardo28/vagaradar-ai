@@ -50,7 +50,7 @@ class GmailImportServiceTest {
                 Optional.of(new br.com.ricardo.vagaradar.dto.VagaResponse(
                         10L, null, "Desenvolvedor Java", "Empresa", "Descrição", null,
                         br.com.ricardo.vagaradar.entity.ModeloTrabalho.NAO_INFORMADO,
-                        "https://www.linkedin.com/jobs/view/123", Instant.now(), Instant.now(),
+                        "https://www.linkedin.com/jobs/view/123", Instant.now(), Instant.now(), null,
                         br.com.ricardo.vagaradar.entity.StatusVaga.RECEBIDA, null
                 ))
         ).willReturn(Optional.empty());

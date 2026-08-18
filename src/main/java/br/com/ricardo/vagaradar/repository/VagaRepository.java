@@ -28,7 +28,7 @@ public interface VagaRepository extends JpaRepository<Vaga, Long> {
     @Query(value = """
             select new br.com.ricardo.vagaradar.dto.VagaResponse(
                 v.id, v.linkedinId, v.cargo, v.empresa, v.descricao, v.localizacao,
-                v.modeloTrabalho, v.link, v.dataPublicacao, v.dataEncontrada, v.status, a.pontuacao
+                v.modeloTrabalho, v.link, v.dataPublicacao, v.dataEncontrada, a.analisadaEm, v.status, a.pontuacao
             )
             from Vaga v
             left join AnaliseVaga a on a.vaga = v

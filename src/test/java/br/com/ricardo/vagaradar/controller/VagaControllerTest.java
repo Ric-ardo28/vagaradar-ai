@@ -37,7 +37,8 @@ class VagaControllerTest {
         VagaResponse vaga = new VagaResponse(
                 1L, "abc123", "Desenvolvedor Java", "Empresa X", "Java e Spring Boot",
                 "São Paulo", ModeloTrabalho.HIBRIDO, "https://www.linkedin.com/jobs/view/123",
-                Instant.parse("2026-08-07T12:00:00Z"), Instant.parse("2026-08-07T13:00:00Z"), StatusVaga.RECEBIDA, null
+                Instant.parse("2026-08-07T12:00:00Z"), Instant.parse("2026-08-07T13:00:00Z"),
+                Instant.parse("2026-08-07T14:00:00Z"), StatusVaga.RECEBIDA, null
         );
         given(vagaService.listarPaginado(0, null, null, null, null))
                 .willReturn(new PaginaVagasResponse(List.of(vaga), 0, 25, 1, 1, 1, 0, 1));
@@ -46,6 +47,7 @@ class VagaControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.vagas[0].id").value(1))
                 .andExpect(jsonPath("$.vagas[0].cargo").value("Desenvolvedor Java"))
+                .andExpect(jsonPath("$.vagas[0].analisadaEm").value("2026-08-07T14:00:00Z"))
                 .andExpect(jsonPath("$.tamanho").value(25));
     }
 
@@ -89,7 +91,7 @@ class VagaControllerTest {
         VagaResponse descartada = new VagaResponse(
                 1L, "abc123", "Desenvolvedor Java", "Empresa X", "Java e Spring Boot",
                 "São Paulo", ModeloTrabalho.HIBRIDO, "https://www.linkedin.com/jobs/view/123",
-                null, Instant.parse("2026-08-07T13:00:00Z"), StatusVaga.DESCARTADA, null
+                null, Instant.parse("2026-08-07T13:00:00Z"), null, StatusVaga.DESCARTADA, null
         );
         given(vagaService.descartar(1L)).willReturn(descartada);
 

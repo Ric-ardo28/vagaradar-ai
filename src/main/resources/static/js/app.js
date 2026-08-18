@@ -22,8 +22,8 @@ let searchTimer;
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#039;', '"':'&quot;' }[char]));
 const statusLabel = status => ({ RECEBIDA:'Aguardando análise', ANALISADA:'Analisada', DESCARTADA:'Descartada' }[status] ?? status);
 const formatWorkModel = model => ({ REMOTO:'Remoto', HIBRIDO:'Híbrido', PRESENCIAL:'Presencial', NAO_INFORMADO:'Modelo não informado' }[model] ?? 'Modelo não informado');
-const formatPublicationDate = date => date
-  ? `Publicada em ${new Intl.DateTimeFormat('pt-BR', { dateStyle:'medium' }).format(new Date(date))}`
+const formatAnalysisDate = date => date
+  ? `Analisada em ${new Intl.DateTimeFormat('pt-BR', { dateStyle:'short', timeStyle:'short' }).format(new Date(date))}`
   : '';
 const formatLastAnalysis = date => new Intl.DateTimeFormat('pt-BR', {
   dateStyle: 'short', timeStyle: 'short'
@@ -82,7 +82,7 @@ function renderVacancies(vacancies) {
       <div>
         <h3>${escapeHtml(vacancy.cargo)}</h3>
         <p class="company">${escapeHtml(vacancy.empresa)}</p>
-        <p class="details">${escapeHtml(vacancy.localizacao || 'Localização não informada')} · ${formatWorkModel(vacancy.modeloTrabalho)}${formatPublicationDate(vacancy.dataPublicacao) ? ` · ${formatPublicationDate(vacancy.dataPublicacao)}` : ''}</p>
+        <p class="details">${escapeHtml(vacancy.localizacao || 'Localização não informada')} · ${formatWorkModel(vacancy.modeloTrabalho)}${formatAnalysisDate(vacancy.analisadaEm) ? ` · ${formatAnalysisDate(vacancy.analisadaEm)}` : ''}</p>
       </div>
       <div class="vacancy-actions">
         <span class="badge badge-${vacancy.status.toLowerCase()}">${statusLabel(vacancy.status)}</span>

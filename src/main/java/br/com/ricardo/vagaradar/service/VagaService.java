@@ -156,9 +156,8 @@ public class VagaService {
     }
 
     private VagaResponse paraResponse(Vaga vaga) {
-        Integer pontuacao = analiseVagaRepository.findByVagaId(vaga.getId())
-                .map(AnaliseVaga::getPontuacao)
-                .orElse(null);
+        Optional<AnaliseVaga> analise = analiseVagaRepository.findByVagaId(vaga.getId());
+        Integer pontuacao = analise.map(AnaliseVaga::getPontuacao).orElse(null);
         return new VagaResponse(
                 vaga.getId(),
                 vaga.getLinkedinId(),
@@ -170,6 +169,7 @@ public class VagaService {
                 vaga.getLink(),
                 vaga.getDataPublicacao(),
                 vaga.getDataEncontrada(),
+                analise.map(AnaliseVaga::getAnalisadaEm).orElse(null),
                 vaga.getStatus(),
                 pontuacao
         );

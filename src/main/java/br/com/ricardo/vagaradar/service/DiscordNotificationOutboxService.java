@@ -45,12 +45,6 @@ public class DiscordNotificationOutboxService {
         }
     }
 
-    public void processarPendentes() {
-        while (processarProxima()) {
-            // Processa uma notificação por transação para isolar falhas e liberar o bloqueio da linha.
-        }
-    }
-
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean processarProxima() {
         List<NotificacaoPendente> pendentes = notificacaoRepository.buscarPendentesParaEnvio(
