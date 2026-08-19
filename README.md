@@ -174,7 +174,7 @@ precisa ser publicado e passar pela verificação exigida pelo escopo de leitura
 ## Automação agendada
 
 Depois da primeira autorização, o cliente OAuth do Google é persistido no PostgreSQL para que o backend possa
-renovar o acesso ao Gmail. Para habilitar a execução automática, configure localmente:
+renovar o acesso ao Gmail. Para habilitar a verificação periódica (alternativa ao webhook), configure localmente:
 
 ```properties
 GMAIL_SCHEDULER_ENABLED=true
@@ -185,3 +185,30 @@ GMAIL_SCHEDULER_INITIAL_DELAY=PT5M
 O ciclo fica desativado por padrão, pois pode consumir créditos da OpenAI. Na AWS, ele está habilitado com intervalo
 de uma hora. O intervalo é contado depois que a execução anterior termina. Os tokens OAuth são dados sensíveis: não
 os versionar, não os registrar em logs e usar um banco de dados protegido em ambientes de produção.
+
+## Processamento imediato por e-mail (Gmail Push)
+
+O VagaRadar pode processar alertas logo que o Gmail os recebe, sem consultar a caixa de entrada a cada hora. O fluxo é
+**Gmail → Google Cloud Pub/Sub → `POST /api/gmail/push` → importação e análise**. O endpoint valida o JWT OIDC enviado
+pelo Pub/Sub antes de aceitar a notificação.
+
+No Google Cloud, crie um tópico, dê a `gmail-api-push@system.gserviceaccount.com` a permissão **Pub/Sub Publisher**
+nesse tópico e crie uma assinatura do tipo **push** apontando para:
+
+`https://SEU_DOMINIO/api/gmail/push`
+
+Na assinatura, habilite autenticação e informe uma conta de serviço exclusiva. Use a mesma URL como *audience*. Em
+seguida, configure no servidor:
+
+```properties
+GMAIL_OAUTH_ENABLED=true
+GMAIL_PUSH_ENABLED=true
+GMAIL_PUSH_TOPIC_NAME=projects/SEU_PROJETO/topics/vagaradar-gmail
+GMAIL_PUSH_AUDIENCE=https://SEU_DOMINIO/api/gmail/push
+GMAIL_PUSH_SERVICE_ACCOUNT_EMAIL=vagaradar-pubsub@SEU_PROJETO.iam.gserviceaccount.com
+GMAIL_SCHEDULER_ENABLED=false
+```
+
+Depois de reiniciar, conecte o Gmail novamente pelo painel (ou aguarde a renovação diária). A renovação apenas mantém
+o monitoramento ativo — o Gmail exige renová-lo em até sete dias — e não busca nem analisa e-mails. O Pub/Sub pode
+entregar mensagens duplicadas; a prevenção de links duplicados já existente mantém o processamento idempotente.

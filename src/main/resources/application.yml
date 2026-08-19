@@ -56,6 +56,13 @@ discord:
 
 gmail:
   oauth-enabled: ${GMAIL_OAUTH_ENABLED:false}
+  push:
+    enabled: ${GMAIL_PUSH_ENABLED:false}
+    topic-name: ${GMAIL_PUSH_TOPIC_NAME:}
+    audience: ${GMAIL_PUSH_AUDIENCE:}
+    service-account-email: ${GMAIL_PUSH_SERVICE_ACCOUNT_EMAIL:}
+    renewal-fixed-delay: ${GMAIL_PUSH_RENEWAL_FIXED_DELAY:P1D}
+    renewal-initial-delay: ${GMAIL_PUSH_RENEWAL_INITIAL_DELAY:PT2M}
   scheduler:
     enabled: ${GMAIL_SCHEDULER_ENABLED:false}
     fixed-delay: ${GMAIL_SCHEDULER_FIXED_DELAY:PT6H}

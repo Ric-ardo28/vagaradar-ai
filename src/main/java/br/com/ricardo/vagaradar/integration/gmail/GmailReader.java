@@ -51,6 +51,27 @@ public class GmailReader {
         }
     }
 
+    public GmailWatch iniciarMonitoramentoDaCaixaDeEntrada(String accessToken, String topicName) {
+        try {
+            JsonNode response = restClient.post()
+                    .uri("/users/me/watch")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                    .body(java.util.Map.of(
+                            "topicName", topicName,
+                            "labelIds", List.of("INBOX"),
+                            "labelFilterBehavior", "INCLUDE"
+                    ))
+                    .retrieve()
+                    .body(JsonNode.class);
+            if (response == null || response.path("historyId").asText().isBlank()) {
+                throw new GmailIntegrationException("O Gmail não retornou o estado do monitoramento.", null);
+            }
+            return new GmailWatch(response.path("historyId").asText(), response.path("expiration").asLong());
+        } catch (RestClientException exception) {
+            throw new GmailIntegrationException("Não foi possível ativar o monitoramento de e-mails no Gmail.", exception);
+        }
+    }
+
     public List<GmailJobAlert> buscarAlertasDetalhados(String accessToken, Instant recebidosDepoisDe) {
         JsonNode response = buscarListaDeMensagens(accessToken, recebidosDepoisDe);
         List<GmailJobAlert> messages = new ArrayList<>();

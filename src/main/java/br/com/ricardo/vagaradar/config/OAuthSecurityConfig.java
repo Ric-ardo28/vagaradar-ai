@@ -23,12 +23,14 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.web.filter.OncePerRequestFilter;
+import br.com.ricardo.vagaradar.service.GmailWatchService;
 
 import java.io.IOException;
 
 @Configuration
-@EnableConfigurationProperties(AppSecurityProperties.class)
+@EnableConfigurationProperties({AppSecurityProperties.class, GmailPushProperties.class})
 public class OAuthSecurityConfig {
 
     @Bean
@@ -60,7 +62,8 @@ public class OAuthSecurityConfig {
     SecurityFilterChain oauthSecurityFilterChain(
             HttpSecurity http,
             ObjectProvider<OAuth2AuthorizedClientService> authorizedClientServiceProvider,
-            ObjectProvider<OAuth2AuthorizationRequestResolver> authorizationRequestResolverProvider
+            ObjectProvider<OAuth2AuthorizationRequestResolver> authorizationRequestResolverProvider,
+            ObjectProvider<GmailWatchService> gmailWatchServiceProvider
     ) throws Exception {
         CookieCsrfTokenRepository csrfRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         csrfRepository.setCookiePath("/");
@@ -69,10 +72,12 @@ public class OAuthSecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfRepository)
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        .ignoringRequestMatchers("/api/gmail/push")
                 )
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/login", "/login.html", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/favicon.svg", "/actuator/health").permitAll()
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers("/api/gmail/push").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.loginPage("/login").defaultSuccessUrl("/", true).permitAll())
@@ -93,11 +98,19 @@ public class OAuthSecurityConfig {
         OAuth2AuthorizedClientService authorizedClientService = authorizedClientServiceProvider.getIfAvailable();
         OAuth2AuthorizationRequestResolver authorizationRequestResolver = authorizationRequestResolverProvider.getIfAvailable();
         if (authorizedClientService != null && authorizationRequestResolver != null) {
+            SavedRequestAwareAuthenticationSuccessHandler successHandler = new SavedRequestAwareAuthenticationSuccessHandler();
+            successHandler.setDefaultTargetUrl("/");
             http.oauth2Login(oauth2 -> oauth2
                     .loginPage("/login")
                     .authorizationEndpoint(endpoint -> endpoint.authorizationRequestResolver(authorizationRequestResolver))
                     .authorizedClientService(authorizedClientService)
-                    .defaultSuccessUrl("/", true)
+                    .successHandler((request, response, authentication) -> {
+                        GmailWatchService gmailWatchService = gmailWatchServiceProvider.getIfAvailable();
+                        if (gmailWatchService != null) {
+                            gmailWatchService.renovarMonitoramento();
+                        }
+                        successHandler.onAuthenticationSuccess(request, response, authentication);
+                    })
             );
         }
 
