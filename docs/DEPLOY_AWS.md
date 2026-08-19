@@ -11,14 +11,14 @@ O VagaRadar AI está hospedado em uma instância virtual Amazon Lightsail:
 | Sistema operacional | Ubuntu |
 | Plano | Lightsail General purpose — 2 vCPUs, 4 GB de RAM e 80 GB SSD |
 | Rede | Dual-stack (IPv4 e IPv6) |
-| Estado observado em 13/08/2026 | Em execução |
+| Estado verificado em 18/08/2026 | Em execução |
 
 O serviço público está disponível em:
 
 - Painel: https://56.125.167.156.sslip.io/login
 - Health check: https://56.125.167.156.sslip.io/actuator/health
 
-Em 13 de agosto de 2026, o health check respondeu `UP` por HTTPS. O projeto não deve ser iniciado localmente para
+Em 18 de agosto de 2026, o health check respondeu `UP` por HTTPS. O projeto não deve ser iniciado localmente para
 uso normal enquanto esse ambiente remoto estiver ativo.
 
 ## Rede e acesso
@@ -61,9 +61,21 @@ OPENAI_API_KEY
 GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET
 GMAIL_OAUTH_ENABLED=true
+GMAIL_SCHEDULER_ENABLED=true
+GMAIL_SCHEDULER_FIXED_DELAY=PT1H
+GMAIL_SCHEDULER_INITIAL_DELAY=PT5M
+DISCORD_WEBHOOK_URL
+DISCORD_MINIMUM_SCORE=70
+DISCORD_OUTBOX_ENABLED=true
+DISCORD_OUTBOX_FIXED_DELAY=PT30S
+DISCORD_OUTBOX_INITIAL_DELAY=PT10S
 SESSION_COOKIE_SECURE=true
 CADDY_DOMAIN=56.125.167.156.sslip.io
 ```
+
+As vagas aprovadas na análise são gravadas primeiro na fila de saída do Discord. Um processamento em segundo plano
+consulta essa fila a cada 30 segundos e tenta enviar cada alerta; uma falha temporária não perde a análise nem bloqueia
+as demais vagas.
 
 O PostgreSQL deve continuar inacessível pela internet. O endpoint público expõe somente o proxy HTTPS e a aplicação.
 

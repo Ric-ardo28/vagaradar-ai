@@ -3,7 +3,7 @@
 Backend em Java 21 e Spring Boot para cadastrar vagas de tecnologia, analisar compatibilidade com um perfil Java/Spring por IA e enviar alertas ao Discord.
 
 O projeto também disponibiliza um painel web local em `http://localhost:8080/`. Ele lista as vagas importadas,
-exibe o status de análise e permite iniciar a conexão Gmail ou a importação manual.
+exibe o status e a data/hora da análise, e permite iniciar a conexão Gmail ou a importação manual.
 
 ## Pré-requisitos
 
@@ -110,7 +110,8 @@ Antes de publicar, configure na plataforma as mesmas variáveis de `.env.example
 - `DATABASE_URL`, `DATABASE_USERNAME` e `DATABASE_PASSWORD` de um PostgreSQL gerenciado;
 - `OPENAI_API_KEY` e, opcionalmente, `DISCORD_WEBHOOK_URL`;
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` e `GMAIL_OAUTH_ENABLED=true` se for usar Gmail;
-- `GMAIL_SCHEDULER_ENABLED=false` inicialmente. Ative-o somente após validar custos e permissões.
+- `GMAIL_SCHEDULER_ENABLED=false` inicialmente. Ative-o somente após validar custos e permissões; no ambiente AWS
+  ativo, ele é executado a cada uma hora.
 - `APP_ADMIN_USERNAME` e `APP_ADMIN_PASSWORD` em um gerenciador de segredos; use `SESSION_COOKIE_SECURE=true` sob HTTPS.
 
 Em produção, inclua a URL pública no URI de redirecionamento do cliente OAuth do Google. Exemplo:
@@ -162,9 +163,9 @@ navegador para:
 - `GET /api/gmail/alerts`: listar alertas candidatos em modo somente leitura;
 - `POST /api/gmail/import`: ler o conteúdo dos alertas, extrair links de vagas do LinkedIn e persistir apenas
   as vagas ainda não cadastradas.
-- `POST /api/gmail/process`: importar vagas novas, analisar todas as vagas que ainda estiverem pendentes e enviar ao
-  Discord apenas as que alcançarem `DISCORD_MINIMUM_SCORE` (70 por padrão). O painel também permite analisar uma vaga
-  pendente individualmente.
+- `POST /api/gmail/process`: importar vagas novas e analisar todas as vagas que ainda estiverem pendentes. As que
+  alcançarem `DISCORD_MINIMUM_SCORE` (70 por padrão) entram na fila de envio do Discord; o envio ocorre em segundo
+  plano. O painel também permite analisar uma vaga pendente individualmente.
 
 Enquanto o projeto OAuth do Google estiver em modo de teste, somente os e-mails adicionados como **usuários de teste**
 na tela de consentimento do Google Cloud poderão autorizar o Gmail. Para permitir qualquer conta Google, o aplicativo
@@ -177,9 +178,10 @@ renovar o acesso ao Gmail. Para habilitar a execução automática, configure lo
 
 ```properties
 GMAIL_SCHEDULER_ENABLED=true
-GMAIL_SCHEDULER_FIXED_DELAY=PT6H
+GMAIL_SCHEDULER_FIXED_DELAY=PT1H
 GMAIL_SCHEDULER_INITIAL_DELAY=PT5M
 ```
 
-O ciclo fica desativado por padrão, pois pode consumir créditos da OpenAI. Os tokens OAuth são dados sensíveis:
-não os versionar, não os registrar em logs e usar um banco de dados protegido em ambientes de produção.
+O ciclo fica desativado por padrão, pois pode consumir créditos da OpenAI. Na AWS, ele está habilitado com intervalo
+de uma hora. O intervalo é contado depois que a execução anterior termina. Os tokens OAuth são dados sensíveis: não
+os versionar, não os registrar em logs e usar um banco de dados protegido em ambientes de produção.

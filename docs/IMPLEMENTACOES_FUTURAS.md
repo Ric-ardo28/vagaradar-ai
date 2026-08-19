@@ -6,13 +6,15 @@ Este documento reúne ideias aprovadas para o VagaRadar AI que ainda não serão
 
 ### Processar alertas do LinkedIn assim que chegarem
 
-**Objetivo:** analisar e enviar ao Discord as vagas novas logo após a chegada do alerta no Gmail, sem esperar a rotina programada de seis horas.
+**Objetivo:** analisar e colocar na fila do Discord as vagas novas logo após a chegada do alerta no Gmail, sem esperar
+a rotina programada de uma hora.
 
 **Como funcionará:**
 
 1. O Gmail avisa o Google Cloud Pub/Sub que a caixa de entrada foi alterada.
 2. O Pub/Sub chama um endereço seguro do VagaRadar AI.
-3. A aplicação consulta somente as mensagens novas, importa as vagas, faz a análise e envia os alertas ao Discord.
+3. A aplicação consulta somente as mensagens novas, importa as vagas, faz a análise e registra os alertas elegíveis
+   na fila do Discord.
 
 **Dependências:**
 

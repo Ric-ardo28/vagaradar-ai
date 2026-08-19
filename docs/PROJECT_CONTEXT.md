@@ -11,14 +11,16 @@ O perfil-base para a análise inclui Java, Spring Boot, APIs REST, JPA/Hibernate
 ## Estado atual
 
 As integrações com Gmail, OpenAI e Discord, além da prevenção de duplicidade, estão concluídas. O backend lê alertas
-do Gmail, importa vagas inéditas, analisa todas as vagas pendentes com OpenAI e envia ao Discord as compatibilidades
-acima do limite configurado. Uma vaga pendente também pode ser analisada individualmente pelo painel. O cliente OAuth
+do Gmail, importa vagas inéditas, analisa todas as vagas pendentes com OpenAI e registra na fila do Discord as
+compatibilidades acima do limite configurado. Um processamento independente envia essa fila, com novas tentativas em
+caso de falha temporária. Uma vaga pendente também pode ser analisada individualmente pelo painel. O cliente OAuth
 do Google é persistido no PostgreSQL para permitir renovação de token e automação sem um navegador aberto.
 
-O agendamento está implementado, porém permanece desativado por padrão através de `GMAIL_SCHEDULER_ENABLED=false`.
-Há testes para fluxos HTTP, importação, processamento e arquivos Docker para executar a aplicação com PostgreSQL.
-O painel requer autenticação de administrador por variáveis de ambiente; ações de escrita usam CSRF. Ele exibe a conta
-Gmail conectada, o estado do Discord, filtros de vagas e uma interface responsiva para desktop e celular.
+O agendamento está implementado e permanece desativado por padrão através de `GMAIL_SCHEDULER_ENABLED=false`; na AWS,
+ele está habilitado com intervalo de uma hora. Há testes para fluxos HTTP, importação, processamento e arquivos Docker
+para executar a aplicação com PostgreSQL. O painel requer autenticação de administrador por variáveis de ambiente;
+ações de escrita usam CSRF. Ele exibe a conta Gmail conectada, o estado do Discord, filtros de vagas, a data/hora em que
+cada vaga foi analisada e uma interface responsiva para desktop e celular.
 O perfil-base continua fixo no código para preservar o direcionamento pessoal do projeto. O painel permite salvar uma
 sobreposição personalizada no PostgreSQL ou removê-la para restaurar o padrão; cada nova análise utiliza a versão ativa.
 
@@ -26,7 +28,7 @@ sobreposição personalizada no PostgreSQL ou removê-la para restaurar o padrã
 
 O VagaRadar AI está publicado na AWS, em uma instância Amazon Lightsail chamada `vagaradar-app`, na região
 São Paulo (`sa-east-1a`). A instância está em execução e oferece 2 vCPUs, 4 GB de RAM e 80 GB SSD. O acesso público
-é feito por HTTPS em `https://56.125.167.156.sslip.io/login`. Em 13 de agosto de 2026, o health check público
+é feito por HTTPS em `https://56.125.167.156.sslip.io/login`. Em 18 de agosto de 2026, o health check público
 `/actuator/health` respondeu `UP`.
 
 A borda pública permite HTTP (80), HTTPS (443) e SSH (22); não há balanceador, CDN ou snapshots automáticos
