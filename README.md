@@ -152,7 +152,6 @@ O antigo guia da Oracle Cloud foi preservado apenas como referência histórica 
 - Discord: opcional; configure `DISCORD_WEBHOOK_URL` para receber alertas.
 - Discord: os alertas elegíveis são registrados no banco após a análise e enviados em segundo plano. Falhas no Discord não desfazem a análise; o sistema faz até cinco tentativas com espera crescente.
 - Gmail: leitura de alertas via OAuth 2.0 do Google; exige `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` locais.
-- Extensão Chrome: a pasta `extension/` contém uma primeira versão para salvar e analisar vagas abertas no LinkedIn. Configure um token longo em `EXTENSION_API_TOKEN`, carregue a pasta em `chrome://extensions` com o modo de desenvolvedor ativado e informe a URL e o token nas opções da extensão. O token é exclusivo da extensão e não substitui as credenciais do administrador.
 
 ## Conectar Gmail
 
