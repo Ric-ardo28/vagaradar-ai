@@ -1,12 +1,15 @@
 package br.com.ricardo.vagaradar.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -14,6 +17,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Getter
 @Entity
@@ -57,6 +62,19 @@ public class Vaga {
     @Column(nullable = false, length = 30)
     private StatusVaga status = StatusVaga.RECEBIDA;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "avaliacao_usuario", nullable = false, length = 30)
+    private AvaliacaoUsuario avaliacaoUsuario = AvaliacaoUsuario.PENDENTE;
+
+    @ElementCollection
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "vaga_motivo_rejeicao", joinColumns = @JoinColumn(name = "vaga_id"))
+    @Column(name = "motivo", nullable = false, length = 40)
+    private Set<MotivoRejeicao> motivosRejeicao = new LinkedHashSet<>();
+
+    @Column(name = "outro_motivo_rejeicao", columnDefinition = "TEXT")
+    private String outroMotivoRejeicao;
+
     public Vaga(
             String linkedinId,
             String cargo,
@@ -90,5 +108,19 @@ public class Vaga {
 
     public void descartar() {
         this.status = StatusVaga.DESCARTADA;
+    }
+
+    public void avaliar(AvaliacaoUsuario avaliacao, Set<MotivoRejeicao> motivos, String outroMotivo) {
+        this.avaliacaoUsuario = avaliacao;
+        this.motivosRejeicao.clear();
+        this.outroMotivoRejeicao = null;
+        if (avaliacao == AvaliacaoUsuario.NAO_GOSTEI) {
+            if (motivos != null) {
+                this.motivosRejeicao.addAll(motivos);
+            }
+            if (this.motivosRejeicao.contains(MotivoRejeicao.OUTRO) && outroMotivo != null && !outroMotivo.isBlank()) {
+                this.outroMotivoRejeicao = outroMotivo.trim();
+            }
+        }
     }
 }

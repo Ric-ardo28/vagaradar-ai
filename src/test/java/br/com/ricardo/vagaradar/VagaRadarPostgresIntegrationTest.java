@@ -86,8 +86,8 @@ class VagaRadarPostgresIntegrationTest {
 
     @Test
     void deveBuscarPaginaSemFiltroNoPostgres() {
-        Page<VagaResponse> pagina = vagaRepository.buscarPaginado(
-                null, null, null, null, PageRequest.of(0, 25)
+        Page<Vaga> pagina = vagaRepository.buscarPaginado(
+                null, null, null, null, null, PageRequest.of(0, 25)
         );
 
         assertThat(pagina.getSize()).isEqualTo(25);

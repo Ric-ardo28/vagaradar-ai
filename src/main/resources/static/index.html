@@ -56,9 +56,14 @@
       <div class="section-heading">
         <div>
           <p class="eyebrow">OPORTUNIDADES</p>
-          <h2>Vagas encontradas</h2>
+          <h2 id="vacancies-heading">Vagas encontradas</h2>
         </div>
         <p id="status-message" class="status-message" role="status">Carregando vagas...</p>
+      </div>
+      <div class="evaluation-tabs" role="tablist" aria-label="Sua triagem de vagas">
+        <button class="evaluation-tab is-active" data-evaluation-tab="PENDENTE" type="button" role="tab" aria-selected="true">Vagas encontradas <span id="pending-evaluation-count">0</span></button>
+        <button class="evaluation-tab" data-evaluation-tab="GOSTEI" type="button" role="tab" aria-selected="false">👍 Gostei <span id="liked-count">0</span></button>
+        <button class="evaluation-tab" data-evaluation-tab="NAO_GOSTEI" type="button" role="tab" aria-selected="false">👎 Não gostei <span id="disliked-count">0</span></button>
       </div>
       <div class="filters" aria-label="Filtros de vagas">
         <label><span>Buscar</span><input id="search-filter" type="search" placeholder="Cargo ou empresa"></label>
@@ -78,6 +83,27 @@
   <dialog id="analysis-dialog" class="analysis-dialog">
     <button id="dialog-close" class="dialog-close" type="button" aria-label="Fechar">×</button>
     <div id="analysis-content"></div>
+  </dialog>
+
+  <dialog id="evaluation-dialog" class="evaluation-dialog">
+    <button id="evaluation-dialog-close" class="dialog-close" type="button" aria-label="Fechar">×</button>
+    <form id="evaluation-form">
+      <p class="eyebrow">SUA AVALIAÇÃO</p>
+      <h2>Por que não combinou?</h2>
+      <p class="profile-mode">Escolha quantos motivos quiser. Isso é opcional e fica salvo para análises futuras.</p>
+      <div class="reason-options">
+        <label><input type="checkbox" name="reason" value="INGLES_AVANCADO"> Inglês avançado</label>
+        <label><input type="checkbox" name="reason" value="SENIORIDADE"> Senioridade</label>
+        <label><input type="checkbox" name="reason" value="REQUISITOS_EXCESSIVOS"> Requisitos excessivos</label>
+        <label><input type="checkbox" name="reason" value="TECNOLOGIAS"> Tecnologias</label>
+        <label><input id="other-reason-checkbox" type="checkbox" name="reason" value="OUTRO"> Outro</label>
+      </div>
+      <label id="other-reason-field" class="other-reason-field" hidden>Outro motivo<textarea id="other-reason" maxlength="1000" placeholder="Conte rapidamente o motivo"></textarea></label>
+      <div class="profile-actions">
+        <button class="button button-secondary" id="evaluation-reset" type="button">Voltar para encontradas</button>
+        <button class="button button-dark" type="submit">Salvar avaliação</button>
+      </div>
+    </form>
   </dialog>
 
   <dialog id="profile-dialog" class="profile-dialog">

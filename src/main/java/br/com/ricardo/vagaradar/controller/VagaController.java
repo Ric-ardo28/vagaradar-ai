@@ -3,6 +3,8 @@ package br.com.ricardo.vagaradar.controller;
 import br.com.ricardo.vagaradar.dto.VagaCreateRequest;
 import br.com.ricardo.vagaradar.dto.VagaResponse;
 import br.com.ricardo.vagaradar.dto.AnaliseVagaResponse;
+import br.com.ricardo.vagaradar.dto.AvaliacaoVagaRequest;
+import br.com.ricardo.vagaradar.entity.AvaliacaoUsuario;
 import br.com.ricardo.vagaradar.dto.PaginaVagasResponse;
 import br.com.ricardo.vagaradar.entity.ModeloTrabalho;
 import br.com.ricardo.vagaradar.entity.StatusVaga;
@@ -39,9 +41,10 @@ public class VagaController {
             @RequestParam(required = false) String busca,
             @RequestParam(required = false) ModeloTrabalho modeloTrabalho,
             @RequestParam(required = false) StatusVaga status,
+            @RequestParam(required = false) AvaliacaoUsuario avaliacaoUsuario,
             @RequestParam(required = false) Integer notaMinima
     ) {
-        return vagaService.listarPaginado(Math.max(pagina, 0), busca, modeloTrabalho, status, notaMinima);
+        return vagaService.listarPaginado(Math.max(pagina, 0), busca, modeloTrabalho, status, avaliacaoUsuario, notaMinima);
     }
 
     @GetMapping("/{id}")
@@ -57,5 +60,10 @@ public class VagaController {
     @PostMapping("/{id}/descartar")
     public VagaResponse descartar(@PathVariable Long id) {
         return vagaService.descartar(id);
+    }
+
+    @PostMapping("/{id}/avaliacao")
+    public VagaResponse avaliar(@PathVariable Long id, @Valid @RequestBody AvaliacaoVagaRequest request) {
+        return vagaService.avaliar(id, request);
     }
 }

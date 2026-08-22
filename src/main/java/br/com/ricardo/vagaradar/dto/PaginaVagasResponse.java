@@ -10,6 +10,9 @@ public record PaginaVagasResponse(
         int totalPaginas,
         long totalMonitoradas,
         long totalAnalisadas,
-        long totalPendentes
+        long totalPendentes,
+        long totalPendentesAvaliacao,
+        long totalGostei,
+        long totalNaoGostei
 ) {
 }

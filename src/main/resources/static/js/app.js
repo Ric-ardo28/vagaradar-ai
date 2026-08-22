@@ -12,12 +12,20 @@ const elements = {
   search: document.querySelector('#search-filter'), workModel: document.querySelector('#work-model-filter'),
   vacancyStatus: document.querySelector('#status-filter'), score: document.querySelector('#score-filter'),
   pagination: document.querySelector('#pagination'), previousPage: document.querySelector('#previous-page'),
-  nextPage: document.querySelector('#next-page'), paginationSummary: document.querySelector('#pagination-summary')
+  nextPage: document.querySelector('#next-page'), paginationSummary: document.querySelector('#pagination-summary'),
+  vacanciesHeading: document.querySelector('#vacancies-heading'),
+  evaluationTabs: document.querySelectorAll('[data-evaluation-tab]'), pendingEvaluationCount: document.querySelector('#pending-evaluation-count'),
+  likedCount: document.querySelector('#liked-count'), dislikedCount: document.querySelector('#disliked-count'),
+  evaluationDialog: document.querySelector('#evaluation-dialog'), evaluationForm: document.querySelector('#evaluation-form'),
+  evaluationReset: document.querySelector('#evaluation-reset'), otherReasonCheckbox: document.querySelector('#other-reason-checkbox'),
+  otherReasonField: document.querySelector('#other-reason-field'), otherReason: document.querySelector('#other-reason')
 };
 let totalVacancies = 0;
 let currentPage = 1;
 const pageSize = 25;
 let searchTimer;
+let selectedEvaluation = 'PENDENTE';
+let evaluationVacancyId;
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#039;', '"':'&quot;' }[char]));
 const statusLabel = status => ({ RECEBIDA:'Aguardando análise', ANALISADA:'Analisada', DESCARTADA:'Descartada' }[status] ?? status);
@@ -70,6 +78,9 @@ function updateStats(page) {
   elements.total.textContent = page.totalMonitoradas;
   elements.analyzed.textContent = page.totalAnalisadas;
   elements.waiting.textContent = page.totalPendentes;
+  elements.pendingEvaluationCount.textContent = page.totalPendentesAvaliacao;
+  elements.likedCount.textContent = page.totalGostei;
+  elements.dislikedCount.textContent = page.totalNaoGostei;
 }
 
 function renderVacancies(vacancies) {
@@ -79,17 +90,21 @@ function renderVacancies(vacancies) {
   }
   elements.vacancies.innerHTML = vacancies.map(vacancy => `
     <article class="vacancy">
-      <div>
+      <div class="vacancy-main">
+        <span class="vacancy-icon" aria-hidden="true">▣</span>
+        <div>
         <h3>${escapeHtml(vacancy.cargo)}</h3>
         <p class="company">${escapeHtml(vacancy.empresa)}</p>
         <p class="details">${escapeHtml(vacancy.localizacao || 'Localização não informada')} · ${formatWorkModel(vacancy.modeloTrabalho)}${formatAnalysisDate(vacancy.analisadaEm) ? ` · ${formatAnalysisDate(vacancy.analisadaEm)}` : ''}</p>
+        </div>
       </div>
       <div class="vacancy-actions">
         <span class="badge badge-${vacancy.status.toLowerCase()}">${statusLabel(vacancy.status)}</span>
         ${vacancy.pontuacao == null ? '' : `<span class="badge score-pill">${vacancy.pontuacao}/100</span>`}
         <a class="vacancy-link" href="${escapeHtml(vacancy.link)}" target="_blank" rel="noopener noreferrer">Ver vaga</a>
         <button class="analyze-button" data-vacancy-id="${vacancy.id}" type="button">${vacancy.status === 'ANALISADA' ? 'Ver análise' : 'Analisar'}</button>
-        ${vacancy.status === 'DESCARTADA' ? '' : `<button class="discard-button" data-discard-id="${vacancy.id}" type="button">Descartar</button>`}
+        <button class="evaluation-button like" data-evaluation-id="${vacancy.id}" data-evaluation="GOSTEI" type="button" title="Gostei desta vaga" aria-label="Gostei desta vaga">👍</button>
+        <button class="evaluation-button dislike" data-evaluation-id="${vacancy.id}" data-evaluation="NAO_GOSTEI" type="button" title="Não gostei desta vaga" aria-label="Não gostei desta vaga">👎</button>
       </div>
     </article>`).join('');
 }
@@ -106,6 +121,7 @@ async function loadVacancies() {
     if (elements.search.value.trim()) params.set('busca', elements.search.value.trim());
     if (elements.workModel.value) params.set('modeloTrabalho', elements.workModel.value);
     if (elements.vacancyStatus.value) params.set('status', elements.vacancyStatus.value);
+    if (selectedEvaluation) params.set('avaliacaoUsuario', selectedEvaluation);
     if (elements.score.value) params.set('notaMinima', elements.score.value);
     const page = await request(`/api/vagas?${params}`);
     totalVacancies = page.totalElementos;
@@ -168,13 +184,18 @@ function showAnalysis(analysis) {
 }
 
 elements.vacancies.addEventListener('click', async event => {
-  const discardButton = event.target.closest('[data-discard-id]');
-  if (discardButton) {
-    if (!window.confirm('Descartar esta vaga? Ela continuará no histórico, mas não será considerada pendente.')) return;
-    discardButton.disabled = true;
+  const evaluationButton = event.target.closest('[data-evaluation-id]');
+  if (evaluationButton) {
+    if (evaluationButton.dataset.evaluation === 'NAO_GOSTEI') {
+      evaluationVacancyId = evaluationButton.dataset.evaluationId;
+      elements.evaluationForm.reset();
+      elements.otherReasonField.hidden = true;
+      elements.evaluationDialog.showModal();
+      return;
+    }
+    evaluationButton.disabled = true;
     try {
-      await request(`/api/vagas/${discardButton.dataset.discardId}/descartar`, { method:'POST' });
-      await loadVacancies();
+      await saveEvaluation(evaluationButton.dataset.evaluationId, { avaliacao:'GOSTEI' });
     } catch (error) { elements.status.textContent = error.message; elements.status.classList.add('error'); }
     return;
   }
@@ -241,8 +262,56 @@ elements.search.addEventListener('input', () => {
   window.clearTimeout(searchTimer);
   searchTimer = window.setTimeout(applyFilters, 300);
 });
+
+async function saveEvaluation(id, body) {
+  await request(`/api/vagas/${id}/avaliacao`, {
+    method:'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(body)
+  });
+  await loadVacancies();
+}
+
+elements.evaluationForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  const submit = elements.evaluationForm.querySelector('[type="submit"]');
+  submit.disabled = true;
+  try {
+    const motivosRejeicao = [...elements.evaluationForm.querySelectorAll('[name="reason"]:checked')].map(input => input.value);
+    await saveEvaluation(evaluationVacancyId, {
+      avaliacao:'NAO_GOSTEI', motivosRejeicao,
+      outroMotivo: elements.otherReason.value.trim() || null
+    });
+    elements.evaluationDialog.close();
+  } catch (error) { elements.status.textContent = error.message; elements.status.classList.add('error'); }
+  finally { submit.disabled = false; }
+});
+
+elements.otherReasonCheckbox.addEventListener('change', () => {
+  elements.otherReasonField.hidden = !elements.otherReasonCheckbox.checked;
+  if (!elements.otherReasonCheckbox.checked) elements.otherReason.value = '';
+});
+
+elements.evaluationReset.addEventListener('click', async () => {
+  elements.evaluationReset.disabled = true;
+  try {
+    await saveEvaluation(evaluationVacancyId, { avaliacao:'PENDENTE' });
+    elements.evaluationDialog.close();
+  } catch (error) { elements.status.textContent = error.message; elements.status.classList.add('error'); }
+  finally { elements.evaluationReset.disabled = false; }
+});
 for (const filter of [elements.workModel, elements.vacancyStatus, elements.score]) {
   filter.addEventListener('change', applyFilters);
+}
+for (const tab of elements.evaluationTabs) {
+  tab.addEventListener('click', () => {
+    selectedEvaluation = tab.dataset.evaluationTab;
+    elements.vacanciesHeading.textContent = ({ PENDENTE:'Vagas encontradas', GOSTEI:'Vagas que gostei', NAO_GOSTEI:'Vagas que não gostei' })[selectedEvaluation];
+    elements.evaluationTabs.forEach(item => {
+      const active = item === tab;
+      item.classList.toggle('is-active', active);
+      item.setAttribute('aria-selected', String(active));
+    });
+    applyFilters();
+  });
 }
 elements.previousPage.addEventListener('click', () => {
   currentPage--;
@@ -253,6 +322,7 @@ elements.nextPage.addEventListener('click', () => {
   loadVacancies();
 });
 document.querySelector('#dialog-close').addEventListener('click', () => elements.dialog.close());
+document.querySelector('#evaluation-dialog-close').addEventListener('click', () => elements.evaluationDialog.close());
 document.querySelector('#profile-dialog-close').addEventListener('click', () => elements.profileDialog.close());
 loadVacancies();
 loadIntegrationStatus();

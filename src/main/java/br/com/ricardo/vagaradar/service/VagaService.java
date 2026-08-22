@@ -4,7 +4,9 @@ import br.com.ricardo.vagaradar.dto.VagaCreateRequest;
 import br.com.ricardo.vagaradar.dto.VagaResponse;
 import br.com.ricardo.vagaradar.dto.AnaliseVagaResponse;
 import br.com.ricardo.vagaradar.dto.PaginaVagasResponse;
+import br.com.ricardo.vagaradar.dto.AvaliacaoVagaRequest;
 import br.com.ricardo.vagaradar.entity.AnaliseVaga;
+import br.com.ricardo.vagaradar.entity.AvaliacaoUsuario;
 import br.com.ricardo.vagaradar.entity.Vaga;
 import br.com.ricardo.vagaradar.entity.StatusVaga;
 import br.com.ricardo.vagaradar.entity.ModeloTrabalho;
@@ -22,6 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class VagaService {
@@ -90,17 +93,21 @@ public class VagaService {
             String busca,
             ModeloTrabalho modeloTrabalho,
             StatusVaga status,
+            AvaliacaoUsuario avaliacaoUsuario,
             Integer notaMinima
     ) {
-        Page<VagaResponse> resultado = vagaRepository.buscarPaginado(
-                normalizarBusca(busca), modeloTrabalho, status, notaMinima, PageRequest.of(pagina, 25)
+        Page<Vaga> resultado = vagaRepository.buscarPaginado(
+                normalizarBusca(busca), modeloTrabalho, status, avaliacaoUsuario, notaMinima, PageRequest.of(pagina, 25)
         );
         return new PaginaVagasResponse(
-                resultado.getContent(), resultado.getNumber(), resultado.getSize(),
+                resultado.map(this::paraResponse).getContent(), resultado.getNumber(), resultado.getSize(),
                 resultado.getTotalElements(), resultado.getTotalPages(),
                 vagaRepository.count(),
                 vagaRepository.countByStatus(StatusVaga.ANALISADA),
-                vagaRepository.countByStatus(StatusVaga.RECEBIDA)
+                vagaRepository.countByStatus(StatusVaga.RECEBIDA),
+                vagaRepository.countByAvaliacaoUsuario(AvaliacaoUsuario.PENDENTE),
+                vagaRepository.countByAvaliacaoUsuario(AvaliacaoUsuario.GOSTEI),
+                vagaRepository.countByAvaliacaoUsuario(AvaliacaoUsuario.NAO_GOSTEI)
         );
     }
 
@@ -134,6 +141,14 @@ public class VagaService {
         Vaga vaga = vagaRepository.findById(id)
                 .orElseThrow(() -> new VagaNaoEncontradaException(id));
         vaga.descartar();
+        return paraResponse(vaga);
+    }
+
+    @Transactional
+    public VagaResponse avaliar(Long id, AvaliacaoVagaRequest request) {
+        Vaga vaga = vagaRepository.findById(id)
+                .orElseThrow(() -> new VagaNaoEncontradaException(id));
+        vaga.avaliar(request.avaliacao(), request.motivosRejeicao(), request.outroMotivo());
         return paraResponse(vaga);
     }
 
@@ -171,7 +186,10 @@ public class VagaService {
                 vaga.getDataEncontrada(),
                 analise.map(AnaliseVaga::getAnalisadaEm).orElse(null),
                 vaga.getStatus(),
-                pontuacao
+                pontuacao,
+                vaga.getAvaliacaoUsuario(),
+                Set.copyOf(vaga.getMotivosRejeicao()),
+                vaga.getOutroMotivoRejeicao()
         );
     }
 
