@@ -26,6 +26,7 @@ const pageSize = 25;
 let searchTimer;
 let selectedEvaluation = 'PENDENTE';
 let evaluationVacancyId;
+const vacancyPageCache = new Map();
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#039;', '"':'&quot;' }[char]));
 const statusLabel = status => ({ RECEBIDA:'Aguardando análise', ANALISADA:'Analisada', DESCARTADA:'Descartada' }[status] ?? status);
@@ -91,7 +92,7 @@ function renderVacancies(vacancies) {
   elements.vacancies.innerHTML = vacancies.map(vacancy => `
     <article class="vacancy">
       <div class="vacancy-main">
-        <span class="vacancy-icon" aria-hidden="true">▣</span>
+        <span class="vacancy-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18M10 12v2h4v-2"></path></svg></span>
         <div>
         <h3>${escapeHtml(vacancy.cargo)}</h3>
         <p class="company">${escapeHtml(vacancy.empresa)}</p>
@@ -114,7 +115,7 @@ function applyFilters() {
   loadVacancies();
 }
 
-async function loadVacancies() {
+async function loadVacancies({ force = false } = {}) {
   elements.status.textContent = 'Atualizando...';
   try {
     const params = new URLSearchParams({ pagina: String(currentPage - 1) });
@@ -123,7 +124,12 @@ async function loadVacancies() {
     if (elements.vacancyStatus.value) params.set('status', elements.vacancyStatus.value);
     if (selectedEvaluation) params.set('avaliacaoUsuario', selectedEvaluation);
     if (elements.score.value) params.set('notaMinima', elements.score.value);
-    const page = await request(`/api/vagas?${params}`);
+    const cacheKey = params.toString();
+    let page = force ? null : vacancyPageCache.get(cacheKey);
+    if (!page) {
+      page = await request(`/api/vagas?${params}`);
+      vacancyPageCache.set(cacheKey, page);
+    }
     totalVacancies = page.totalElementos;
     currentPage = page.pagina + 1;
     renderVacancies(page.vagas);
@@ -222,7 +228,8 @@ elements.process.addEventListener('click', async () => {
   try {
     const result = await request('/api/gmail/process', { method:'POST' });
     elements.status.textContent = `${result.importacao.vagasImportadas} vaga(s) importada(s) e ${result.vagasAnalisadas} analisada(s).`;
-    await loadVacancies();
+    vacancyPageCache.clear();
+    await loadVacancies({ force:true });
     await loadIntegrationStatus();
   } catch (error) {
     elements.status.textContent = error.message.includes('403') ? 'Conecte o Gmail antes de importar.' : error.message;
@@ -230,7 +237,7 @@ elements.process.addEventListener('click', async () => {
   } finally { elements.process.disabled = false; elements.process.textContent = 'Buscar e analisar agora'; }
 });
 
-elements.refresh.addEventListener('click', loadVacancies);
+elements.refresh.addEventListener('click', () => loadVacancies({ force:true }));
 elements.profileButton.addEventListener('click', openProfile);
 elements.profileForm.addEventListener('submit', async event => {
   event.preventDefault();
@@ -267,6 +274,7 @@ async function saveEvaluation(id, body) {
   await request(`/api/vagas/${id}/avaliacao`, {
     method:'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(body)
   });
+  vacancyPageCache.clear();
   await loadVacancies();
 }
 

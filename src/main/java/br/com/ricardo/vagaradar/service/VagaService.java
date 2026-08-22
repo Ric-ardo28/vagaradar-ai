@@ -23,8 +23,11 @@ import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class VagaService {
@@ -99,8 +102,14 @@ public class VagaService {
         Page<Vaga> resultado = vagaRepository.buscarPaginado(
                 normalizarBusca(busca), modeloTrabalho, status, avaliacaoUsuario, notaMinima, PageRequest.of(pagina, 25)
         );
+        Map<Long, AnaliseVaga> analisesPorVaga = analiseVagaRepository.findAllByVagaIdIn(
+                resultado.getContent().stream().map(Vaga::getId).toList()
+        ).stream().collect(Collectors.toMap(analise -> analise.getVaga().getId(), Function.identity()));
         return new PaginaVagasResponse(
-                resultado.map(this::paraResponse).getContent(), resultado.getNumber(), resultado.getSize(),
+                resultado.getContent().stream()
+                        .map(vaga -> paraResponseDaLista(vaga, analisesPorVaga.get(vaga.getId())))
+                        .toList(),
+                resultado.getNumber(), resultado.getSize(),
                 resultado.getTotalElements(), resultado.getTotalPages(),
                 vagaRepository.count(),
                 vagaRepository.countByStatus(StatusVaga.ANALISADA),
@@ -172,7 +181,20 @@ public class VagaService {
 
     private VagaResponse paraResponse(Vaga vaga) {
         Optional<AnaliseVaga> analise = analiseVagaRepository.findByVagaId(vaga.getId());
-        Integer pontuacao = analise.map(AnaliseVaga::getPontuacao).orElse(null);
+        return paraResponse(vaga, analise.orElse(null), Set.copyOf(vaga.getMotivosRejeicao()), vaga.getOutroMotivoRejeicao());
+    }
+
+    private VagaResponse paraResponseDaLista(Vaga vaga, AnaliseVaga analise) {
+        return paraResponse(vaga, analise, Set.of(), null);
+    }
+
+    private VagaResponse paraResponse(
+            Vaga vaga,
+            AnaliseVaga analise,
+            Set<br.com.ricardo.vagaradar.entity.MotivoRejeicao> motivosRejeicao,
+            String outroMotivoRejeicao
+    ) {
+        Integer pontuacao = analise == null ? null : analise.getPontuacao();
         return new VagaResponse(
                 vaga.getId(),
                 vaga.getLinkedinId(),
@@ -184,12 +206,12 @@ public class VagaService {
                 vaga.getLink(),
                 vaga.getDataPublicacao(),
                 vaga.getDataEncontrada(),
-                analise.map(AnaliseVaga::getAnalisadaEm).orElse(null),
+                analise == null ? null : analise.getAnalisadaEm(),
                 vaga.getStatus(),
                 pontuacao,
                 vaga.getAvaliacaoUsuario(),
-                Set.copyOf(vaga.getMotivosRejeicao()),
-                vaga.getOutroMotivoRejeicao()
+                motivosRejeicao,
+                outroMotivoRejeicao
         );
     }
 

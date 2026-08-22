@@ -21,4 +21,4 @@ button { font:inherit; cursor:pointer; }
 
 .vacancy-link { flex:0 0 auto; border:1px solid var(--line); border-radius:8px; padding:9px 12px; color:var(--accent-dark); background:white; font-size:13px; font-weight:750; text-decoration:none; }.vacancy-link:hover { background:var(--accent-soft); border-color:var(--accent); }
 
-.vacancy-main { display:flex; align-items:center; gap:14px; min-width:0; }.vacancy-main > div { min-width:0; }.vacancy-icon { display:grid; flex:0 0 auto; place-items:center; width:44px; height:44px; border-radius:11px; color:var(--accent-dark); background:var(--accent-soft); font-size:21px; }
+.vacancy-main { display:flex; align-items:center; gap:14px; min-width:0; }.vacancy-main > div { min-width:0; }.vacancy-icon { display:grid; flex:0 0 auto; place-items:center; width:62px; height:62px; border-radius:11px; color:var(--accent-dark); background:var(--accent-soft); }.vacancy-icon svg { width:30px; height:30px; }
