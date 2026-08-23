@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.LinkedHashSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -174,6 +175,13 @@ public class VagaService {
                 resultado.recomendacao()
         );
         AnaliseVaga analiseSalva = analiseVagaRepository.save(analise);
+        if (resultado.dadosExtraidosConfiaveis()) {
+            vaga.enriquecerComDadosDaAnalise(
+                    resultado.localizacaoExtraida(), resultado.modeloTrabalhoExtraido(),
+                    new LinkedHashSet<>(resultado.tecnologias()), new LinkedHashSet<>(resultado.habilidades()),
+                    resultado.senioridade(), resultado.requisitosPrincipais()
+            );
+        }
         vaga.marcarComoAnalisada();
         notificationOutboxService.registrarSeElegivel(analiseSalva);
         return paraAnaliseResponse(analiseSalva);
@@ -185,7 +193,7 @@ public class VagaService {
     }
 
     private VagaResponse paraResponseDaLista(Vaga vaga, AnaliseVaga analise) {
-        return paraResponse(vaga, analise, Set.of(), null);
+        return paraResponse(vaga, analise, Set.copyOf(vaga.getMotivosRejeicao()), vaga.getOutroMotivoRejeicao());
     }
 
     private VagaResponse paraResponse(
@@ -211,7 +219,11 @@ public class VagaService {
                 pontuacao,
                 vaga.getAvaliacaoUsuario(),
                 motivosRejeicao,
-                outroMotivoRejeicao
+                outroMotivoRejeicao,
+                vaga.getSenioridade(),
+                vaga.getRequisitosPrincipais(),
+                Set.copyOf(vaga.getTecnologias()),
+                Set.copyOf(vaga.getHabilidades())
         );
     }
 

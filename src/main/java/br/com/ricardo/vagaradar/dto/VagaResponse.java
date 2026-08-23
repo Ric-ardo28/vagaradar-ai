@@ -24,6 +24,10 @@ public record VagaResponse(
         Integer pontuacao,
         AvaliacaoUsuario avaliacaoUsuario,
         Set<MotivoRejeicao> motivosRejeicao,
-        String outroMotivoRejeicao
+        String outroMotivoRejeicao,
+        String senioridade,
+        String requisitosPrincipais,
+        Set<String> tecnologias,
+        Set<String> habilidades
 ) {
 }

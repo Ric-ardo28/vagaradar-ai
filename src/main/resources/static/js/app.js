@@ -37,6 +37,19 @@ const formatAnalysisDate = date => date
 const formatLastAnalysis = date => new Intl.DateTimeFormat('pt-BR', {
   dateStyle: 'short', timeStyle: 'short'
 }).format(new Date(date));
+const rejectionReasonLabel = reason => ({
+  INGLES_AVANCADO:'Inglês avançado exigido', SENIORIDADE:'Senioridade acima do meu nível', REQUISITOS_EXCESSIVOS:'Muitos requisitos', TECNOLOGIAS:'Tecnologias não compatíveis',
+  LOCALIZACAO:'Localização não me atende', MODELO_TRABALHO:'Modalidade não me atende', SALARIO:'Salário não me atende', TIPO_CONTRATO:'Tipo de contrato não me atende',
+  AREA_ATUACAO:'Área de atuação não me interessa', EMPRESA:'Não tenho interesse na empresa', BENEFICIOS:'Benefícios insuficientes', CARGA_HORARIA:'Carga horária ou escala não me atende',
+  VAGA_NAO_CLARA:'Vaga pouco clara', VAGA_DUPLICADA:'Vaga duplicada', OUTRO:'Outro motivo'
+}[reason] ?? reason);
+const tags = (values = [], className) => values.length ? `<div class="vacancy-tags ${className}">${values.slice(0, 4).map(value => `<span>${escapeHtml(value)}</span>`).join('')}${values.length > 4 ? `<span>+${values.length - 4}</span>` : ''}</div>` : '';
+const rejectionReasons = vacancy => {
+  if (vacancy.avaliacaoUsuario !== 'NAO_GOSTEI') return '';
+  const reasons = (vacancy.motivosRejeicao || []).map(rejectionReasonLabel);
+  if (vacancy.outroMotivoRejeicao) reasons.push(vacancy.outroMotivoRejeicao);
+  return reasons.length ? `<section class="rejection-reasons"><strong>Motivo de não ter gostado</strong><p>${reasons.slice(0, 2).map(escapeHtml).join(' · ')}${reasons.length > 2 ? ` · +${reasons.length - 2} outros` : ''}</p></section>` : '';
+};
 const csrfToken = () => document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=').slice(1).join('=');
 
 async function request(url, options = {}) {
@@ -97,6 +110,11 @@ function renderVacancies(vacancies) {
         <h3>${escapeHtml(vacancy.cargo)}</h3>
         <p class="company">${escapeHtml(vacancy.empresa)}</p>
         <p class="details">${escapeHtml(vacancy.localizacao || 'Localização não informada')} · ${formatWorkModel(vacancy.modeloTrabalho)}${formatAnalysisDate(vacancy.analisadaEm) ? ` · ${formatAnalysisDate(vacancy.analisadaEm)}` : ''}</p>
+        ${vacancy.senioridade ? `<p class="details">${escapeHtml(vacancy.senioridade)}</p>` : ''}
+        ${tags(vacancy.tecnologias, 'technology-tags')}
+        ${tags(vacancy.habilidades, 'skill-tags')}
+        ${vacancy.requisitosPrincipais ? `<p class="vacancy-requirements">${escapeHtml(vacancy.requisitosPrincipais)}</p>` : ''}
+        ${rejectionReasons(vacancy)}
         </div>
       </div>
       <div class="vacancy-actions">

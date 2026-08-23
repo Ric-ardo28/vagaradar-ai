@@ -40,7 +40,7 @@ class VagaControllerTest {
                 "São Paulo", ModeloTrabalho.HIBRIDO, "https://www.linkedin.com/jobs/view/123",
                 Instant.parse("2026-08-07T12:00:00Z"), Instant.parse("2026-08-07T13:00:00Z"),
                 Instant.parse("2026-08-07T14:00:00Z"), StatusVaga.RECEBIDA, null,
-                AvaliacaoUsuario.PENDENTE, java.util.Set.of(), null
+                AvaliacaoUsuario.PENDENTE, java.util.Set.of(), null, null, null, java.util.Set.of(), java.util.Set.of()
         );
         given(vagaService.listarPaginado(0, null, null, null, null, null))
                 .willReturn(new PaginaVagasResponse(List.of(vaga), 0, 25, 1, 1, 1, 0, 1, 1, 0, 0));
@@ -94,7 +94,7 @@ class VagaControllerTest {
                 1L, "abc123", "Desenvolvedor Java", "Empresa X", "Java e Spring Boot",
                 "São Paulo", ModeloTrabalho.HIBRIDO, "https://www.linkedin.com/jobs/view/123",
                 null, Instant.parse("2026-08-07T13:00:00Z"), null, StatusVaga.DESCARTADA, null,
-                AvaliacaoUsuario.PENDENTE, java.util.Set.of(), null
+                AvaliacaoUsuario.PENDENTE, java.util.Set.of(), null, null, null, java.util.Set.of(), java.util.Set.of()
         );
         given(vagaService.descartar(1L)).willReturn(descartada);
 

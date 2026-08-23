@@ -86,6 +86,27 @@ class GmailJobAlertParserTest {
     }
 
     @Test
+    void naoDeveUsarCorpoInteiroQuandoAlertaContemMaisDeUmaVaga() {
+        GmailJobAlert alert = new GmailJobAlert(
+                "message-1", "thread-1", "Alerta de vagas",
+                """
+                        Desenvolvedor Java Júnior
+                        São Paulo, Brasil · Híbrido · Java e Spring
+                        Visualizar vaga: https://www.linkedin.com/jobs/view/123
+                        --------------------
+                        Backend Engineer
+                        Recife, Brasil · Remoto · Python e AWS
+                        Visualizar vaga: https://www.linkedin.com/jobs/view/456
+                        """, "", Instant.now()
+        );
+
+        List<VagaCreateRequest> vagas = parser.extrairVagas(alert);
+
+        assertThat(vagas.get(0).descricao()).contains("São Paulo").doesNotContain("Recife");
+        assertThat(vagas.get(1).descricao()).contains("Recife").doesNotContain("São Paulo");
+    }
+
+    @Test
     void deveUsarADataDePublicacaoInformadaNoTrechoDaVaga() {
         GmailJobAlert alert = new GmailJobAlert(
                 "message-1", "thread-1", "Alerta de vagas",

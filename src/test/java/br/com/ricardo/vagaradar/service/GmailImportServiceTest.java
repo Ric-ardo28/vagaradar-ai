@@ -52,7 +52,8 @@ class GmailImportServiceTest {
                         br.com.ricardo.vagaradar.entity.ModeloTrabalho.NAO_INFORMADO,
                         "https://www.linkedin.com/jobs/view/123", Instant.now(), Instant.now(), null,
                         br.com.ricardo.vagaradar.entity.StatusVaga.RECEBIDA, null,
-                        br.com.ricardo.vagaradar.entity.AvaliacaoUsuario.PENDENTE, java.util.Set.of(), null
+                        br.com.ricardo.vagaradar.entity.AvaliacaoUsuario.PENDENTE, java.util.Set.of(), null,
+                        null, null, java.util.Set.of(), java.util.Set.of()
                 ))
         ).willReturn(Optional.empty());
         GmailImportService service = new GmailImportService(gmailReader, vagaService, gmailSyncStateService);

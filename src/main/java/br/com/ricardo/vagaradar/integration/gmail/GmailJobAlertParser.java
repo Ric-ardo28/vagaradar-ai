@@ -43,7 +43,7 @@ public class GmailJobAlertParser {
 
         return vagasPorLink.entrySet().stream()
                 .filter(entry -> temTituloDeVaga(entry.getValue().titulo()))
-                .map(entry -> criarVaga(alert, entry.getKey(), entry.getValue()))
+                .map(entry -> criarVaga(alert, entry.getKey(), entry.getValue(), vagasPorLink.size()))
                 .toList();
     }
 
@@ -61,7 +61,7 @@ public class GmailJobAlertParser {
             String link = normalizarLink(matcher.group("url"));
             if (link != null) {
                 String titulo = limparTexto(matcher.group("label"));
-                vagasPorLink.putIfAbsent(link, new VagaExtraida(titulo, null));
+                vagasPorLink.putIfAbsent(link, new VagaExtraida(titulo, null, ""));
             }
         }
     }
@@ -82,9 +82,9 @@ public class GmailJobAlertParser {
                 String titulo = extrairTituloAntesDoLink(trechoDaVaga);
                 VagaExtraida vagaExistente = vagasPorLink.get(link);
                 if (!titulo.isBlank()) {
-                    vagasPorLink.put(link, new VagaExtraida(titulo, extrairDataPublicacao(trechoDaVaga, alert.receivedAt())));
+                    vagasPorLink.put(link, new VagaExtraida(titulo, extrairDataPublicacao(trechoDaVaga, alert.receivedAt()), limparTexto(trechoDaVaga)));
                 } else {
-                    vagasPorLink.putIfAbsent(link, vagaExistente == null ? new VagaExtraida("", null) : vagaExistente);
+                    vagasPorLink.putIfAbsent(link, vagaExistente == null ? new VagaExtraida("", null, "") : vagaExistente);
                 }
             }
             fimDoLinkAnterior = matcher.end();
@@ -130,8 +130,8 @@ public class GmailJobAlertParser {
                 && !texto.startsWith("seu alerta de vaga");
     }
 
-    private VagaCreateRequest criarVaga(GmailJobAlert alert, String link, VagaExtraida vagaExtraida) {
-        String descricao = descricaoDoAlerta(alert);
+    private VagaCreateRequest criarVaga(GmailJobAlert alert, String link, VagaExtraida vagaExtraida, int totalDeVagas) {
+        String descricao = descricaoIsoladaDaVaga(alert, vagaExtraida, totalDeVagas);
 
         return new VagaCreateRequest(
                 null,
@@ -187,7 +187,17 @@ public class GmailJobAlertParser {
         return "https://www.linkedin.com/jobs/view/" + matcher.group("jobId");
     }
 
-    private String descricaoDoAlerta(GmailJobAlert alert) {
+    private String descricaoIsoladaDaVaga(GmailJobAlert alert, VagaExtraida vagaExtraida, int totalDeVagas) {
+        if (!vagaExtraida.trechoConfiavel().isBlank()) {
+            return limitar("Trecho do alerta para esta vaga: " + vagaExtraida.trechoConfiavel(), MAX_DESCRIPTION_LENGTH);
+        }
+        if (totalDeVagas > 1) {
+            return "Título da vaga: " + limitar(vagaExtraida.titulo(), 255);
+        }
+        return descricaoDoAlertaUnico(alert);
+    }
+
+    private String descricaoDoAlertaUnico(GmailJobAlert alert) {
         String corpo = limparTexto(alert.plainText());
         if (corpo.isBlank()) {
             corpo = limparTexto(alert.html());
@@ -212,6 +222,6 @@ public class GmailJobAlertParser {
         return value.length() <= tamanhoMaximo ? value : value.substring(0, tamanhoMaximo);
     }
 
-    private record VagaExtraida(String titulo, java.time.Instant dataPublicacao) {
+    private record VagaExtraida(String titulo, java.time.Instant dataPublicacao, String trechoConfiavel) {
     }
 }

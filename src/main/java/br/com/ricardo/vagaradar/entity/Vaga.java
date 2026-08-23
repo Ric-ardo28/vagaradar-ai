@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.Instant;
 import java.util.LinkedHashSet;
@@ -67,6 +68,7 @@ public class Vaga {
     private AvaliacaoUsuario avaliacaoUsuario = AvaliacaoUsuario.PENDENTE;
 
     @ElementCollection
+    @BatchSize(size = 25)
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "vaga_motivo_rejeicao", joinColumns = @JoinColumn(name = "vaga_id"))
     @Column(name = "motivo", nullable = false, length = 40)
@@ -74,6 +76,24 @@ public class Vaga {
 
     @Column(name = "outro_motivo_rejeicao", columnDefinition = "TEXT")
     private String outroMotivoRejeicao;
+
+    @Column(length = 255)
+    private String senioridade;
+
+    @Column(name = "requisitos_principais", columnDefinition = "TEXT")
+    private String requisitosPrincipais;
+
+    @ElementCollection
+    @BatchSize(size = 25)
+    @CollectionTable(name = "vaga_tecnologia", joinColumns = @JoinColumn(name = "vaga_id"))
+    @Column(name = "tecnologia", nullable = false, length = 100)
+    private Set<String> tecnologias = new LinkedHashSet<>();
+
+    @ElementCollection
+    @BatchSize(size = 25)
+    @CollectionTable(name = "vaga_habilidade", joinColumns = @JoinColumn(name = "vaga_id"))
+    @Column(name = "habilidade", nullable = false, length = 255)
+    private Set<String> habilidades = new LinkedHashSet<>();
 
     public Vaga(
             String linkedinId,
@@ -104,6 +124,38 @@ public class Vaga {
 
     public void marcarComoAnalisada() {
         this.status = StatusVaga.ANALISADA;
+    }
+
+    public void enriquecerComDadosDaAnalise(
+            String localizacaoExtraida,
+            ModeloTrabalho modeloTrabalhoExtraido,
+            Set<String> tecnologiasExtraidas,
+            Set<String> habilidadesExtraidas,
+            String senioridadeExtraida,
+            String requisitosExtraidos
+    ) {
+        if ((localizacao == null || localizacao.isBlank()) && localizacaoExtraida != null && !localizacaoExtraida.isBlank()) {
+            this.localizacao = localizacaoExtraida.trim();
+        }
+        if (modeloTrabalho == ModeloTrabalho.NAO_INFORMADO && modeloTrabalhoExtraido != null
+                && modeloTrabalhoExtraido != ModeloTrabalho.NAO_INFORMADO) {
+            this.modeloTrabalho = modeloTrabalhoExtraido;
+        }
+        substituir(tecnologias, tecnologiasExtraidas);
+        substituir(habilidades, habilidadesExtraidas);
+        if (senioridadeExtraida != null && !senioridadeExtraida.isBlank()) {
+            this.senioridade = senioridadeExtraida.trim();
+        }
+        if (requisitosExtraidos != null && !requisitosExtraidos.isBlank()) {
+            this.requisitosPrincipais = requisitosExtraidos.trim();
+        }
+    }
+
+    private void substituir(Set<String> destino, Set<String> origem) {
+        destino.clear();
+        if (origem != null) {
+            origem.stream().filter(valor -> valor != null && !valor.isBlank()).map(String::trim).forEach(destino::add);
+        }
     }
 
     public void descartar() {
