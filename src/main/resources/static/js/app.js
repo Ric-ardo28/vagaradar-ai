@@ -293,7 +293,9 @@ async function saveEvaluation(id, body) {
     method:'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(body)
   });
   vacancyPageCache.clear();
-  await loadVacancies();
+  // A atualização da lista não deve bloquear a confirmação visual da avaliação.
+  // Ela é refeita em segundo plano assim que o banco confirma a gravação.
+  void loadVacancies({ force:true });
 }
 
 elements.evaluationForm.addEventListener('submit', async event => {
@@ -302,11 +304,12 @@ elements.evaluationForm.addEventListener('submit', async event => {
   submit.disabled = true;
   try {
     const motivosRejeicao = [...elements.evaluationForm.querySelectorAll('[name="reason"]:checked')].map(input => input.value);
-    await saveEvaluation(evaluationVacancyId, {
+    const save = saveEvaluation(evaluationVacancyId, {
       avaliacao:'NAO_GOSTEI', motivosRejeicao,
       outroMotivo: elements.otherReason.value.trim() || null
     });
     elements.evaluationDialog.close();
+    await save;
   } catch (error) { elements.status.textContent = error.message; elements.status.classList.add('error'); }
   finally { submit.disabled = false; }
 });
@@ -319,8 +322,9 @@ elements.otherReasonCheckbox.addEventListener('change', () => {
 elements.evaluationReset.addEventListener('click', async () => {
   elements.evaluationReset.disabled = true;
   try {
-    await saveEvaluation(evaluationVacancyId, { avaliacao:'PENDENTE' });
+    const save = saveEvaluation(evaluationVacancyId, { avaliacao:'PENDENTE' });
     elements.evaluationDialog.close();
+    await save;
   } catch (error) { elements.status.textContent = error.message; elements.status.classList.add('error'); }
   finally { elements.evaluationReset.disabled = false; }
 });

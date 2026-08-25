@@ -155,11 +155,10 @@ public class VagaService {
     }
 
     @Transactional
-    public VagaResponse avaliar(Long id, AvaliacaoVagaRequest request) {
+    public void avaliar(Long id, AvaliacaoVagaRequest request) {
         Vaga vaga = vagaRepository.findById(id)
                 .orElseThrow(() -> new VagaNaoEncontradaException(id));
         vaga.avaliar(request.avaliacao(), request.motivosRejeicao(), request.outroMotivo());
-        return paraResponse(vaga);
     }
 
     private AnaliseVagaResponse criarAnalise(Long id) {
