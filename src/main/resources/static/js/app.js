@@ -48,7 +48,7 @@ const rejectionReasons = vacancy => {
   if (vacancy.avaliacaoUsuario !== 'NAO_GOSTEI') return '';
   const reasons = (vacancy.motivosRejeicao || []).map(rejectionReasonLabel);
   if (vacancy.outroMotivoRejeicao) reasons.push(vacancy.outroMotivoRejeicao);
-  return reasons.length ? `<section class="rejection-reasons"><strong>Motivo de não ter gostado</strong><p>${reasons.slice(0, 2).map(escapeHtml).join(' · ')}${reasons.length > 2 ? ` · +${reasons.length - 2} outros` : ''}</p></section>` : '';
+  return reasons.length ? `<section class="rejection-reasons"><strong>Motivo de incompatibilidade</strong><p>${reasons.slice(0, 2).map(escapeHtml).join(' · ')}${reasons.length > 2 ? ` · +${reasons.length - 2} outros` : ''}</p></section>` : '';
 };
 const csrfToken = () => document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=').slice(1).join('=');
 
@@ -122,8 +122,8 @@ function renderVacancies(vacancies) {
         ${vacancy.pontuacao == null ? '' : `<span class="badge score-pill">${vacancy.pontuacao}/100</span>`}
         <a class="vacancy-link" href="${escapeHtml(vacancy.link)}" target="_blank" rel="noopener noreferrer">Ver vaga</a>
         <button class="analyze-button" data-vacancy-id="${vacancy.id}" type="button">${vacancy.status === 'ANALISADA' ? 'Ver análise' : 'Analisar'}</button>
-        <button class="evaluation-button like" data-evaluation-id="${vacancy.id}" data-evaluation="GOSTEI" type="button" title="Gostei desta vaga" aria-label="Gostei desta vaga">👍</button>
-        <button class="evaluation-button dislike" data-evaluation-id="${vacancy.id}" data-evaluation="NAO_GOSTEI" type="button" title="Não gostei desta vaga" aria-label="Não gostei desta vaga">👎</button>
+        <button class="evaluation-button like" data-evaluation-id="${vacancy.id}" data-evaluation="GOSTEI" type="button" title="Marcar como compatível" aria-label="Marcar como compatível"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h3Z"></path><path d="M7 22h9.3a2 2 0 0 0 1.9-1.37l2.43-7A2 2 0 0 0 18.74 11H14l.72-4.32A2.4 2.4 0 0 0 12.35 4L7 10Z"></path></svg></button>
+        <button class="evaluation-button dislike" data-evaluation-id="${vacancy.id}" data-evaluation="NAO_GOSTEI" type="button" title="Marcar como não compatível" aria-label="Marcar como não compatível"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14V2H4a2 2 0 0 0-2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3Z"></path><path d="M7 2h9.3a2 2 0 0 1 1.9 1.37l2.43 7A2 2 0 0 1 18.74 13H14l.72 4.32A2.4 2.4 0 0 1 12.35 20L7 14Z"></path></svg></button>
       </div>
     </article>`).join('');
 }
@@ -334,7 +334,7 @@ for (const filter of [elements.workModel, elements.vacancyStatus, elements.score
 for (const tab of elements.evaluationTabs) {
   tab.addEventListener('click', () => {
     selectedEvaluation = tab.dataset.evaluationTab;
-    elements.vacanciesHeading.textContent = ({ PENDENTE:'Vagas encontradas', GOSTEI:'Vagas que gostei', NAO_GOSTEI:'Vagas que não gostei' })[selectedEvaluation];
+    elements.vacanciesHeading.textContent = ({ PENDENTE:'Vagas encontradas', GOSTEI:'Vagas compatíveis', NAO_GOSTEI:'Vagas não compatíveis' })[selectedEvaluation];
     elements.evaluationTabs.forEach(item => {
       const active = item === tab;
       item.classList.toggle('is-active', active);
