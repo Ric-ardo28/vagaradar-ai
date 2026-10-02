@@ -1,9 +1,47 @@
 # VagaRadar AI
 
-Backend em Java 21 e Spring Boot para cadastrar vagas de tecnologia, analisar compatibilidade com um perfil Java/Spring por IA e enviar alertas ao Discord.
+Aplicação de uso pessoal em Java 21 e Spring Boot para organizar vagas de tecnologia, analisar a compatibilidade com um perfil profissional por IA e enviar alertas ao Discord.
 
-O projeto também disponibiliza um painel web local em `http://localhost:8080/`. Ele lista as vagas importadas,
-exibe o status e a data/hora da análise, e permite iniciar a conexão Gmail ou a importação manual.
+O projeto reúne integração com APIs externas, autenticação, persistência, processamento em segundo plano e um painel
+web em HTML, CSS e JavaScript. O objetivo é reduzir o trabalho de leitura e triagem de alertas de emprego.
+
+## Funcionalidades
+
+- Cadastro manual e importação de vagas dos alertas do LinkedIn recebidos no Gmail, com prevenção de duplicidades.
+- Análise de compatibilidade de 0 a 100 pela OpenAI, usando um perfil profissional personalizável.
+- Extração de senioridade, requisitos, tecnologias e habilidades quando há evidências na descrição da vaga.
+- Painel com paginação, busca e filtros por modelo de trabalho, status, avaliação pessoal e nota mínima.
+- Triagem pessoal com **Gostei**, **Não gostei**, motivos de rejeição e histórico de vagas descartadas.
+- Notificações no Discord por uma fila persistida no banco, com novas tentativas em caso de falha.
+- Importação manual, agendamento configurável e suporte opcional a notificações Gmail Push via Google Cloud Pub/Sub.
+
+## Arquitetura
+
+```mermaid
+flowchart LR
+    Gmail[Alertas no Gmail] --> Importacao[Importação e deduplicação]
+    Painel[Painel web / API] --> Servicos[Serviços Spring Boot]
+    Importacao --> Servicos
+    Servicos --> OpenAI[Análise pela OpenAI]
+    Servicos --> Banco[(PostgreSQL)]
+    Banco --> Fila[Fila de notificações]
+    Fila --> Discord[Discord]
+    PubSub[Google Cloud Pub/Sub opcional] --> Importacao
+```
+
+O backend separa controllers, serviços, repositórios, DTOs e clientes de integração. Spring Security protege o acesso;
+Spring Data JPA cuida da persistência e Flyway aplica as migrações. Docker Compose reúne aplicação e PostgreSQL.
+O workflow do GitHub Actions executa os testes antes da implantação na AWS.
+
+## Escopo e demonstração
+
+Este é um projeto pessoal de portfólio, com acesso administrativo e integrações configuradas pelo responsável pela
+instalação. Não oferece cadastro público nem isolamento de dados entre múltiplos usuários. A pontuação da IA auxilia
+a triagem e depende da qualidade das informações recebidas; a decisão de candidatura continua com o usuário.
+
+A execução local permite conhecer o projeto independentemente da disponibilidade de uma hospedagem. As integrações
+são configuráveis: Gmail exige autorização Google, Discord é opcional e a análise por IA requer chave e créditos
+próprios. O servidor de uso pessoal não é uma demonstração aberta ao público.
 
 ## Pré-requisitos
 
@@ -11,6 +49,8 @@ exibe o status e a data/hora da análise, e permite iniciar a conexão Gmail ou 
 - Maven 3.9+
 - PostgreSQL 16+
 - Uma chave da OpenAI para usar a análise por IA
+
+Para executar tudo em containers, use Docker Engine com Docker Compose; o build da aplicação ocorre na imagem.
 
 ## Configuração
 
@@ -32,9 +72,13 @@ créditos da OpenAI; por isso, ela sempre exige uma confirmação no navegador.
 
 ## Acesso e segurança
 
-O painel e todas as rotas de negócio exigem login em `http://localhost:8080/login`. A aplicação protege ações de
-escrita com CSRF e mantém a sessão por 8 horas, por padrão. O endpoint `GET /actuator/health` é a única rota pública,
-para uso por verificações de saúde da infraestrutura.
+O painel e as APIs de vagas e perfil exigem uma sessão autenticada. O login administrativo fica em
+`http://localhost:8080/login`. A aplicação protege as ações de escrita da sessão com CSRF e mantém a sessão por
+8 horas, por padrão.
+
+Login, arquivos estáticos, rotas de autorização OAuth e `GET /actuator/health` permitem acesso sem sessão.
+Quando habilitado, `POST /api/gmail/push` também dispensa sessão e CSRF, mas exige um JWT OIDC do Pub/Sub,
+validado pelo serviço de autenticação da integração.
 
 Após entrar no painel, use **Conectar Gmail** para iniciar o OAuth. O navegador retorna ao painel depois do consentimento.
 
@@ -50,10 +94,11 @@ do código.
 | Método | Rota | Descrição |
 | --- | --- | --- |
 | POST | `/api/vagas` | Cadastra uma vaga |
-| GET | `/api/vagas` | Lista vagas |
+| GET | `/api/vagas` | Lista vagas com paginação, filtros e contadores |
 | GET | `/api/vagas/{id}` | Busca uma vaga |
 | POST | `/api/vagas/{id}/analise` | Gera e persiste a análise de compatibilidade |
 | POST | `/api/vagas/{id}/descartar` | Move uma vaga para o histórico de descartadas |
+| POST | `/api/vagas/{id}/avaliacao` | Salva a avaliação pessoal e os motivos de rejeição; retorna 204 |
 | GET | `/api/perfil` | Retorna o perfil-base ou a versão personalizada ativa |
 | PUT | `/api/perfil` | Salva a versão personalizada do perfil |
 | DELETE | `/api/perfil` | Remove a personalização e restaura o perfil-base |
@@ -63,6 +108,11 @@ do código.
 | GET | `/api/gmail/alerts` | Lista alertas candidatos sem importar vagas |
 | POST | `/api/gmail/import` | Importa vagas novas dos alertas do LinkedIn |
 | POST | `/api/gmail/process` | Importa vagas novas e analisa todas as vagas pendentes |
+| POST | `/api/gmail/push` | Recebe notificações autenticadas do Pub/Sub, quando habilitado |
+
+`GET /api/vagas` aceita `pagina` (a partir de zero), `busca`, `modeloTrabalho`, `status`, `avaliacaoUsuario` e
+`notaMinima`. A resposta contém `vagas`, metadados de paginação e contadores. A avaliação pessoal pode ser
+`PENDENTE`, `GOSTEI` ou `NAO_GOSTEI`; ela é independente da pontuação gerada pela IA.
 
 Exemplo de cadastro:
 
@@ -84,11 +134,11 @@ Exemplo de cadastro:
 Com as variáveis configuradas, execute:
 
 ```bash
-docker compose up --build
+docker compose --env-file .env.local up --build
 ```
 
 Para executar o backend pelo Maven e o banco pelo Docker, inicie somente o PostgreSQL com
-`docker compose up -d postgres`. Ele fica disponível em `localhost:5433`, evitando conflito
+`docker compose --env-file .env.local up -d postgres`. Ele fica disponível em `localhost:5433`, evitando conflito
 com uma instalação local do PostgreSQL que use a porta padrão `5432`.
 
 O PostgreSQL ficará disponível no serviço `postgres`; a aplicação aguarda a verificação de saúde do banco antes de iniciar.
@@ -97,7 +147,7 @@ Para produção, aplique também a composição de produção. Ela remove a expo
 de sessão como seguro; publique a aplicação atrás de HTTPS.
 
 ```bash
-docker compose -f compose.yaml -f compose.production.yaml up -d --build
+docker compose --env-file .env.local -f compose.yaml -f compose.production.yaml up -d --build
 ```
 
 ## Health check e deploy
@@ -107,40 +157,34 @@ plataforma de hospedagem para confirmar que a aplicação e o banco estão dispo
 
 Antes de publicar, configure na plataforma as mesmas variáveis de `.env.example`, sem versionar valores reais:
 
-- `DATABASE_URL`, `DATABASE_USERNAME` e `DATABASE_PASSWORD` de um PostgreSQL gerenciado;
+- `DATABASE_URL`, `DATABASE_USERNAME` e `DATABASE_PASSWORD` do PostgreSQL da instalação;
 - `OPENAI_API_KEY` e, opcionalmente, `DISCORD_WEBHOOK_URL`;
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` e `GMAIL_OAUTH_ENABLED=true` se for usar Gmail;
-- `GMAIL_SCHEDULER_ENABLED=false` inicialmente. Ative-o somente após validar custos e permissões; no ambiente AWS
-  ativo, ele é executado a cada uma hora.
+- `GMAIL_SCHEDULER_ENABLED=false` inicialmente. Ative-o somente após validar custos e permissões.
 - `APP_ADMIN_USERNAME` e `APP_ADMIN_PASSWORD` em um gerenciador de segredos; use `SESSION_COOKIE_SECURE=true` sob HTTPS.
 
 Em produção, inclua a URL pública no URI de redirecionamento do cliente OAuth do Google. Exemplo:
 `https://seu-dominio.com/login/oauth2/code/google`.
 
-Os testes de integração usam Testcontainers com PostgreSQL 16 quando o Docker Engine está disponível. Em ambientes
-sem Docker, eles são ignorados; os testes unitários continuam sendo executados normalmente.
-
 O serviço PostgreSQL não deve ter porta exposta publicamente em produção. Mantenha-o acessível apenas pela rede interna
 dos containers e restrinja o acesso administrativo ao banco, pois ele contém os tokens OAuth persistidos.
 
-### Deploy gratuito na Koyeb
+### Referência de implantação na Koyeb
 
-Para uso pessoal, o projeto pode ser publicado com uma instância web gratuita e PostgreSQL gratuito na Koyeb. O guia
-completo está em [docs/DEPLOY_KOYEB.md](docs/DEPLOY_KOYEB.md). A aplicação respeita automaticamente a variável `PORT`
-fornecida pela plataforma e deve usar `SESSION_COOKIE_SECURE=true` em produção.
+O guia [docs/DEPLOY_KOYEB.md](docs/DEPLOY_KOYEB.md) registra uma alternativa de implantação. Confirme os planos,
+limites e preços atuais do provedor antes de utilizá-lo; o guia não garante hospedagem gratuita. A aplicação respeita
+a variável `PORT` fornecida pela plataforma e deve usar `SESSION_COOKIE_SECURE=true` em produção.
 
-O plano gratuito entra em repouso após uma hora sem tráfego, portanto não é adequado para garantir a execução do
-agendador do Gmail. Mantenha `GMAIL_SCHEDULER_ENABLED=false` e importe as vagas manualmente pelo painel.
+Em planos que suspendem a aplicação por inatividade, o agendador não tem execução contínua garantida.
+Nesse cenário, mantenha `GMAIL_SCHEDULER_ENABLED=false` e importe as vagas manualmente pelo painel.
 
-### Deploy ativo na AWS
+### Implantação na AWS
 
-O ambiente de produção ativo está hospedado na AWS e pode ser acessado em
-[https://56.125.167.156.sslip.io/login](https://56.125.167.156.sslip.io/login).
-O health check público é [https://56.125.167.156.sslip.io/actuator/health](https://56.125.167.156.sslip.io/actuator/health).
+O projeto foi implantado no Amazon Lightsail com HTTPS via Caddy e PostgreSQL na rede interna dos containers.
+A manutenção desse ambiente é independente da publicação do código no GitHub e pode ser interrompida pelo autor.
 
-O guia operacional está em [docs/DEPLOY_AWS.md](docs/DEPLOY_AWS.md). A aplicação está em uma instância Amazon
-Lightsail na região de São Paulo, protegida por HTTPS; o PostgreSQL permanece fora da internet e os segredos continuam
-exclusivos do ambiente remoto. A composição de produção existente ainda se chama `compose.oracle.yaml` por herança do
+O guia operacional está em [docs/DEPLOY_AWS.md](docs/DEPLOY_AWS.md). A composição com Caddy ainda se chama
+`compose.oracle.yaml` por herança do
 projeto, mas o nome do arquivo não identifica o provedor ativo. Não a renomeie diretamente no servidor sem ajustar o
 processo de implantação.
 
@@ -150,13 +194,13 @@ O antigo guia da Oracle Cloud foi preservado apenas como referência histórica 
 ## Integrações
 
 - OpenAI: obrigatória apenas para gerar análises; usa `OPENAI_API_KEY`.
-- Discord: opcional; configure `DISCORD_WEBHOOK_URL` para receber alertas.
-- Discord: os alertas elegíveis são registrados no banco após a análise e enviados em segundo plano. Falhas no Discord não desfazem a análise; o sistema faz até cinco tentativas com espera crescente.
+- Discord: opcional; configure `DISCORD_WEBHOOK_URL`. Os alertas elegíveis são registrados no banco e enviados em segundo plano. Falhas não desfazem a análise; o sistema faz até cinco tentativas com espera crescente.
 - Gmail: leitura de alertas via OAuth 2.0 do Google; exige `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` locais.
 
 ## Conectar Gmail
 
-Com `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` configurados, abra
+Com `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` e `GMAIL_OAUTH_ENABLED=true` configurados, cadastre
+`http://localhost:8080/login/oauth2/code/google` como URI de redirecionamento no cliente OAuth do Google e abra
 `http://localhost:8080/oauth2/authorization/google`. Após aprovar o consentimento, use a mesma sessão do
 navegador para:
 
@@ -182,8 +226,8 @@ GMAIL_SCHEDULER_FIXED_DELAY=PT1H
 GMAIL_SCHEDULER_INITIAL_DELAY=PT5M
 ```
 
-O ciclo fica desativado por padrão, pois pode consumir créditos da OpenAI. Na AWS, ele está habilitado com intervalo
-de uma hora. O intervalo é contado depois que a execução anterior termina. Os tokens OAuth são dados sensíveis: não
+O ciclo fica desativado por padrão, pois pode consumir créditos da OpenAI. O exemplo acima define uma hora;
+sem sobrescrita, o padrão do código é de seis horas. O intervalo é contado depois que a execução anterior termina. Os tokens OAuth são dados sensíveis: não
 os versionar, não os registrar em logs e usar um banco de dados protegido em ambientes de produção.
 
 ## Processamento imediato por e-mail (Gmail Push)
@@ -211,4 +255,24 @@ GMAIL_SCHEDULER_ENABLED=false
 
 Depois de reiniciar, conecte o Gmail novamente pelo painel (ou aguarde a renovação diária). A renovação apenas mantém
 o monitoramento ativo — o Gmail exige renová-lo em até sete dias — e não busca nem analisa e-mails. O Pub/Sub pode
-entregar mensagens duplicadas; a prevenção de links duplicados já existente mantém o processamento idempotente.
+entregar mensagens duplicadas; a prevenção de links duplicados evita recadastrar a mesma vaga. Isso não equivale
+a uma garantia de execução única de todas as chamadas externas.
+
+## Testes
+
+```bash
+mvn test
+```
+
+Há testes de controllers, importação e processamento do Gmail, perfil profissional e fila de notificações.
+Os testes de integração usam Testcontainers com PostgreSQL 16 quando Docker está disponível. Sem Docker,
+esses testes são ignorados; isso não deve ser interpretado como validação da integração com o banco.
+
+## Documentação complementar
+
+- [Contexto do projeto](docs/PROJECT_CONTEXT.md)
+- [Guia de implantação AWS](docs/DEPLOY_AWS.md)
+- [Pendências e ideias futuras](docs/IMPLEMENTACOES_FUTURAS.md)
+
+Nunca versione credenciais, tokens OAuth, backups do banco ou capturas de tela com dados pessoais. Para apresentar
+o painel em um portfólio, utilize vagas fictícias e oculte identificadores das contas conectadas.
