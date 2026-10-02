@@ -2,14 +2,14 @@
 
 Este documento reúne ideias aprovadas para o VagaRadar AI que ainda não serão feitas agora. Cada item deve indicar seu objetivo, dependências e o que falta decidir antes de começar.
 
-## Prioridade alta
+## Integração implementada — ativação depende do ambiente
 
 ### Processar alertas do LinkedIn assim que chegarem
 
 **Objetivo:** analisar e colocar na fila do Discord as vagas novas logo após a chegada do alerta no Gmail, sem esperar
 a rotina programada de uma hora.
 
-**Como funcionará:**
+**Fluxo implementado:**
 
 1. O Gmail avisa o Google Cloud Pub/Sub que a caixa de entrada foi alterada.
 2. O Pub/Sub chama um endereço seguro do VagaRadar AI.
@@ -22,8 +22,10 @@ a rotina programada de uma hora.
 - Projeto no Google Cloud com Pub/Sub habilitado.
 - Renovação periódica da assinatura de monitoramento do Gmail.
 
-**Situação:** a hospedagem pública na AWS já está disponível. Falta configurar o Pub/Sub, o endpoint seguro e a
-renovação do monitoramento Gmail. Até essa implementação, a verificação programada continua como alternativa.
+**Situação:** o código já contém o endpoint `/api/gmail/push`, a validação do JWT OIDC e a renovação periódica
+do monitoramento Gmail. A ativação exige configurar tópico, assinatura autenticada, permissões e variáveis do
+ambiente conforme o [README](../README.md#processamento-imediato-por-e-mail-gmail-push). A presença do código
+não confirma que a integração esteja habilitada no servidor. O agendamento continua como alternativa.
 
 ## Próximas ideias a avaliar
 

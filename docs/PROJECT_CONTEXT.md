@@ -24,6 +24,11 @@ cada vaga foi analisada e uma interface responsiva para desktop e celular.
 O perfil-base continua fixo no código para preservar o direcionamento pessoal do projeto. O painel permite salvar uma
 sobreposição personalizada no PostgreSQL ou removê-la para restaurar o padrão; cada nova análise utiliza a versão ativa.
 
+O painel também oferece triagem pessoal (pendente, gostei e não gostei), motivos de rejeição, paginação e filtros.
+As análises podem extrair senioridade, requisitos, tecnologias e habilidades quando esses dados constam na descrição.
+O Gmail Push já possui endpoint, validação OIDC e renovação do monitoramento implementados; sua ativação depende
+da configuração do Google Cloud e das variáveis do ambiente. Consulte o README para a configuração.
+
 ## Situação de publicação
 
 O VagaRadar AI está publicado na AWS, em uma instância Amazon Lightsail chamada `vagaradar-app`, na região
