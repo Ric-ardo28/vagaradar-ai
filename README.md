@@ -5,6 +5,11 @@ Aplicação de uso pessoal em Java 21 e Spring Boot para organizar vagas de tecn
 O projeto reúne integração com APIs externas, autenticação, persistência, processamento em segundo plano e um painel
 web em HTML, CSS e JavaScript. O objetivo é reduzir o trabalho de leitura e triagem de alertas de emprego.
 
+[Acessar o VagaRadar AI](https://56.125.167.156.sslip.io/login) · [Histórico de publicações](https://github.com/Ric-ardo28/vagaradar-ai/actions/workflows/deploy-production.yml)
+
+O acesso ao painel exige autenticação administrativa. A interface tem navegação responsiva para desktop, tablet e
+celular; o projeto continua sendo de uso pessoal, sem cadastro público.
+
 ## Funcionalidades
 
 - Cadastro manual e importação de vagas dos alertas do LinkedIn recebidos no Gmail, com prevenção de duplicidades.
@@ -14,6 +19,41 @@ web em HTML, CSS e JavaScript. O objetivo é reduzir o trabalho de leitura e tri
 - Triagem pessoal com **Gostei**, **Não gostei**, motivos de rejeição e histórico de vagas descartadas.
 - Notificações no Discord por uma fila persistida no banco, com novas tentativas em caso de falha.
 - Importação manual, agendamento configurável e suporte opcional a notificações Gmail Push via Google Cloud Pub/Sub.
+
+## Interface e experiência de uso
+
+O dashboard prioriza a leitura e a triagem das oportunidades, preservando a identidade verde do VagaRadar AI.
+
+- **Navegação:** sidebar no desktop e menu recolhível em telas menores, com acessos à visão geral, oportunidades e integrações.
+- **Resumo:** contadores de vagas monitoradas, analisadas e aguardando análise.
+- **Central de automação:** conexão Gmail, configuração do Discord e data da última análise, com a ação de buscar e analisar novas vagas.
+- **Triagem:** abas de vagas encontradas, compatíveis e não compatíveis, com busca, filtros e paginação.
+- **Cards de vagas:** cargo, empresa, modalidade, localização, requisitos e tecnologias, quando disponíveis. A pontuação da IA aparece separada da avaliação pessoal.
+- **Detalhes e perfil:** diálogos para consultar a análise, registrar motivos de rejeição e editar o perfil profissional.
+- **Retorno visual:** carregamento inicial com esqueletos, mensagens de erro e confirmação, além de estados vazios conforme a busca ou a aba selecionada.
+
+A interface inclui foco visível, link para pular ao conteúdo, navegação das abas por setas e suporte a teclado no menu
+móvel. As animações respeitam a preferência do sistema por movimento reduzido. O botão **Ver vaga** abre o endereço
+original da oportunidade; a candidatura é realizada no site de destino.
+
+### Front-end
+
+O front-end usa HTML, CSS e JavaScript puros, servidos pelo Spring Boot. Não requer instalação de pacotes npm nem
+uma etapa separada de build. O painel fica em `/` e o login em `/login`; os atalhos da sidebar navegam pelas seções
+do próprio painel.
+
+| Arquivo | Responsabilidade |
+| --- | --- |
+| [`index.html`](src/main/resources/static/index.html) | Estrutura do dashboard, filtros, navegação e diálogos |
+| [`login.html`](src/main/resources/static/login.html) | Formulário de acesso administrativo |
+| [`app.css`](src/main/resources/static/css/app.css) | Estilos compartilhados, componentes, estados e responsividade |
+| [`app.js`](src/main/resources/static/js/app.js) | Renderização das vagas e interação com as APIs existentes |
+| [`navigation.js`](src/main/resources/static/js/navigation.js) | Menu responsivo e navegação por teclado |
+| [`login.js`](src/main/resources/static/js/login.js) | Token CSRF do formulário e mensagens de login |
+
+A fonte **Manrope** é servida localmente, com sua [licença OFL](src/main/resources/static/css/fonts/OFL.txt).
+Os ícones **Phosphor** são SVGs incorporados ao HTML e JavaScript, com a
+[licença MIT](src/main/resources/static/images/icons/LICENSE.txt) incluída. Esses recursos não dependem de CDN.
 
 ## Arquitetura
 
@@ -181,7 +221,12 @@ Nesse cenário, mantenha `GMAIL_SCHEDULER_ENABLED=false` e importe as vagas manu
 ### Implantação na AWS
 
 O projeto foi implantado no Amazon Lightsail com HTTPS via Caddy e PostgreSQL na rede interna dos containers.
-A manutenção desse ambiente é independente da publicação do código no GitHub e pode ser interrompida pelo autor.
+O workflow [Publicar em producao](.github/workflows/deploy-production.yml) executa os testes a cada envio para `main`
+e, após aprovação, publica na AWS e aguarda o health check da aplicação. Também permite execução manual pelo GitHub Actions.
+
+O redesign foi publicado em **1 de novembro de 2026**, com testes e deploy concluídos com sucesso. Na verificação após
+a publicação, o [health check](https://56.125.167.156.sslip.io/actuator/health) respondeu `UP` e a tela de login apresentou
+a nova interface. A disponibilidade da hospedagem depende da manutenção do ambiente pelo autor.
 
 O guia operacional está em [docs/DEPLOY_AWS.md](docs/DEPLOY_AWS.md). A composição com Caddy ainda se chama
 `compose.oracle.yaml` por herança do
@@ -267,6 +312,26 @@ mvn test
 Há testes de controllers, importação e processamento do Gmail, perfil profissional e fila de notificações.
 Os testes de integração usam Testcontainers com PostgreSQL 16 quando Docker está disponível. Sem Docker,
 esses testes são ignorados; isso não deve ser interpretado como validação da integração com o banco.
+
+Para compilar, executar os testes e gerar o pacote da aplicação:
+
+```bash
+mvn clean package
+```
+
+Não há ferramenta de lint ou suíte automatizada de navegador configurada. Se Node.js estiver disponível, a sintaxe
+dos scripts pode ser conferida sem instalar dependências:
+
+```bash
+node --check src/main/resources/static/js/app.js
+node --check src/main/resources/static/js/navigation.js
+node --check src/main/resources/static/js/login.js
+```
+
+Na validação do redesign, a interface foi exercitada no Chrome em desktop e nas larguras de 768, 390 e 320 pixels,
+usando respostas simuladas. Foram conferidos filtros, paginação, análise, edição do perfil, avaliação de vagas,
+estados vazios e de erro, além da navegação por teclado. Essa verificação não substitui testes com as integrações reais
+de Gmail, OpenAI e Discord.
 
 ## Documentação complementar
 
