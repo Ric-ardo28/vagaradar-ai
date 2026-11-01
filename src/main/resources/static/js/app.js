@@ -43,6 +43,11 @@ const rejectionReasonLabel = reason => ({
   AREA_ATUACAO:'Área de atuação não me interessa', EMPRESA:'Não tenho interesse na empresa', BENEFICIOS:'Benefícios insuficientes', CARGA_HORARIA:'Carga horária ou escala não me atende',
   VAGA_NAO_CLARA:'Vaga pouco clara', VAGA_DUPLICADA:'Vaga duplicada', OUTRO:'Outro motivo'
 }[reason] ?? reason);
+const vacancyIcons = {
+  "briefcase": "<svg class=\"icon\" aria-hidden=\"true\" focusable=\"false\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M216,56H176V48a24,24,0,0,0-24-24H104A24,24,0,0,0,80,48v8H40A16,16,0,0,0,24,72V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V72A16,16,0,0,0,216,56ZM96,48a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96ZM216,72v41.61A184,184,0,0,1,128,136a184.07,184.07,0,0,1-88-22.38V72Zm0,128H40V131.64A200.19,200.19,0,0,0,128,152a200.25,200.25,0,0,0,88-20.37V200ZM104,112a8,8,0,0,1,8-8h32a8,8,0,0,1,0,16H112A8,8,0,0,1,104,112Z\"/></svg>",
+  "like": "<svg class=\"icon\" aria-hidden=\"true\" focusable=\"false\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M234,80.12A24,24,0,0,0,216,72H160V56a40,40,0,0,0-40-40,8,8,0,0,0-7.16,4.42L75.06,96H32a16,16,0,0,0-16,16v88a16,16,0,0,0,16,16H204a24,24,0,0,0,23.82-21l12-96A24,24,0,0,0,234,80.12ZM32,112H72v88H32ZM223.94,97l-12,96a8,8,0,0,1-7.94,7H88V105.89l36.71-73.43A24,24,0,0,1,144,56V80a8,8,0,0,0,8,8h64a8,8,0,0,1,7.94,9Z\"/></svg>",
+  "dislike": "<svg class=\"icon\" aria-hidden=\"true\" focusable=\"false\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M239.82,157l-12-96A24,24,0,0,0,204,40H32A16,16,0,0,0,16,56v88a16,16,0,0,0,16,16H75.06l37.78,75.58A8,8,0,0,0,120,240a40,40,0,0,0,40-40V184h56a24,24,0,0,0,23.82-27ZM72,144H32V56H72Zm150,21.29a7.88,7.88,0,0,1-6,2.71H152a8,8,0,0,0-8,8v24a24,24,0,0,1-19.29,23.54L88,150.11V56H204a8,8,0,0,1,7.94,7l12,96A7.87,7.87,0,0,1,222,165.29Z\"/></svg>"
+};
 const tags = (values = [], className) => values.length ? `<div class="vacancy-tags ${className}">${values.slice(0, 4).map(value => `<span>${escapeHtml(value)}</span>`).join('')}${values.length > 4 ? `<span>+${values.length - 4}</span>` : ''}</div>` : '';
 const rejectionReasons = vacancy => {
   if (vacancy.avaliacaoUsuario !== 'NAO_GOSTEI') return '';
@@ -99,13 +104,22 @@ function updateStats(page) {
 
 function renderVacancies(vacancies) {
   if (!vacancies.length) {
-    elements.vacancies.replaceChildren(document.querySelector('#empty-state-template').content.cloneNode(true));
+    const emptyState = document.querySelector('#empty-state-template').content.cloneNode(true);
+    const hasFilters = elements.search.value.trim() || elements.workModel.value || elements.vacancyStatus.value || elements.score.value;
+    if (hasFilters) {
+      emptyState.querySelector('h3').textContent = 'Nenhuma vaga com esses filtros';
+      emptyState.querySelector('p').textContent = 'Tente outro cargo ou empresa, ou ajuste os filtros para ampliar sua busca.';
+    } else if (selectedEvaluation !== 'PENDENTE') {
+      emptyState.querySelector('h3').textContent = selectedEvaluation === 'GOSTEI' ? 'Suas escolhas aparecem aqui' : 'Nenhuma vaga marcada como não compatível';
+      emptyState.querySelector('p').textContent = 'Avalie as oportunidades na aba Vagas encontradas para organizar sua triagem.';
+    }
+    elements.vacancies.replaceChildren(emptyState);
     return;
   }
   elements.vacancies.innerHTML = vacancies.map(vacancy => `
     <article class="vacancy">
       <div class="vacancy-main">
-        <span class="vacancy-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18M10 12v2h4v-2"></path></svg></span>
+        <span class="vacancy-icon" aria-hidden="true">${vacancyIcons.briefcase}</span>
         <div>
         <h3>${escapeHtml(vacancy.cargo)}</h3>
         <p class="company">${escapeHtml(vacancy.empresa)}</p>
@@ -119,11 +133,11 @@ function renderVacancies(vacancies) {
       </div>
       <div class="vacancy-actions">
         <span class="badge badge-${vacancy.status.toLowerCase()}">${statusLabel(vacancy.status)}</span>
-        ${vacancy.pontuacao == null ? '' : `<span class="badge score-pill">${vacancy.pontuacao}/100</span>`}
+        ${vacancy.pontuacao == null ? '' : `<span class="badge score-pill" aria-label="Compatibilidade segundo a IA: ${vacancy.pontuacao} de 100">IA · ${vacancy.pontuacao}/100</span>`}
         <a class="vacancy-link" href="${escapeHtml(vacancy.link)}" target="_blank" rel="noopener noreferrer">Ver vaga</a>
         <button class="analyze-button" data-vacancy-id="${vacancy.id}" type="button">${vacancy.status === 'ANALISADA' ? 'Ver análise' : 'Analisar'}</button>
-        <button class="evaluation-button like" data-evaluation-id="${vacancy.id}" data-evaluation="GOSTEI" type="button" title="Marcar como compatível" aria-label="Marcar como compatível"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h3Z"></path><path d="M7 22h9.3a2 2 0 0 0 1.9-1.37l2.43-7A2 2 0 0 0 18.74 11H14l.72-4.32A2.4 2.4 0 0 0 12.35 4L7 10Z"></path></svg></button>
-        <button class="evaluation-button dislike" data-evaluation-id="${vacancy.id}" data-evaluation="NAO_GOSTEI" type="button" title="Marcar como não compatível" aria-label="Marcar como não compatível"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14V2H4a2 2 0 0 0-2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3Z"></path><path d="M7 2h9.3a2 2 0 0 1 1.9 1.37l2.43 7A2 2 0 0 1 18.74 13H14l.72 4.32A2.4 2.4 0 0 1 12.35 20L7 14Z"></path></svg></button>
+        <button class="evaluation-button like" data-evaluation-id="${vacancy.id}" data-evaluation="GOSTEI" type="button" title="Marcar como compatível" aria-label="Marcar como compatível" aria-pressed="${vacancy.avaliacaoUsuario === 'GOSTEI'}">${vacancyIcons.like}</button>
+        <button class="evaluation-button dislike" data-evaluation-id="${vacancy.id}" data-evaluation="NAO_GOSTEI" type="button" title="Marcar como não compatível" aria-label="Marcar como não compatível" aria-pressed="${vacancy.avaliacaoUsuario === 'NAO_GOSTEI'}">${vacancyIcons.dislike}</button>
       </div>
     </article>`).join('');
 }
@@ -134,7 +148,12 @@ function applyFilters() {
 }
 
 async function loadVacancies({ force = false } = {}) {
-  elements.status.textContent = 'Atualizando...';
+  elements.status.textContent = 'Atualizando vagas...';
+  elements.status.classList.remove('error');
+  elements.vacancies.setAttribute('aria-busy', 'true');
+  if (!elements.vacancies.children.length) {
+    elements.vacancies.innerHTML = Array.from({ length: 3 }, () => '<div class="skeleton-card" aria-hidden="true"><span class="skeleton-line"></span><span class="skeleton-line"></span><span class="skeleton-line"></span></div>').join('');
+  }
   try {
     const params = new URLSearchParams({ pagina: String(currentPage - 1) });
     if (elements.search.value.trim()) params.set('busca', elements.search.value.trim());
@@ -164,6 +183,11 @@ async function loadVacancies({ force = false } = {}) {
   } catch (error) {
     elements.status.textContent = error.message;
     elements.status.classList.add('error');
+    if (elements.vacancies.querySelector('.skeleton-card')) {
+      elements.vacancies.innerHTML = '<div class="empty-state"><h3>Não foi possível carregar as vagas</h3><p>Use Atualizar vagas para tentar novamente.</p></div>';
+    }
+  } finally {
+    elements.vacancies.setAttribute('aria-busy', 'false');
   }
 }
 
@@ -199,7 +223,7 @@ async function loadIntegrationStatus() {
 function showAnalysis(analysis) {
   elements.analysis.innerHTML = `
     <p class="eyebrow">ANÁLISE DE COMPATIBILIDADE</p>
-    <h2>${escapeHtml(analysis.nivelCompatibilidade)}</h2>
+    <h2 id="analysis-title">${escapeHtml(analysis.nivelCompatibilidade)}</h2>
     <p class="score"><strong>${analysis.pontuacao}</strong><span>/ 100</span></p>
     <section class="analysis-block"><h3>Pontos fortes</h3><p>${escapeHtml(analysis.pontosFortes || 'Não informado')}</p></section>
     <section class="analysis-block"><h3>Pontos a desenvolver</h3><p>${escapeHtml(analysis.pontosFaltantes || 'Não informado')}</p></section>
@@ -221,10 +245,12 @@ elements.vacancies.addEventListener('click', async event => {
     try {
       await saveEvaluation(evaluationButton.dataset.evaluationId, { avaliacao:'GOSTEI' });
     } catch (error) { elements.status.textContent = error.message; elements.status.classList.add('error'); }
+    finally { evaluationButton.disabled = false; }
     return;
   }
   const button = event.target.closest('[data-vacancy-id]');
   if (!button) return;
+  const previousLabel = button.textContent;
   button.disabled = true;
   button.textContent = 'Carregando...';
   try {
@@ -232,7 +258,7 @@ elements.vacancies.addEventListener('click', async event => {
     await loadVacancies();
     await loadIntegrationStatus();
   } catch (error) { elements.status.textContent = error.message; elements.status.classList.add('error'); }
-  finally { button.disabled = false; }
+  finally { button.disabled = false; button.textContent = previousLabel; }
 });
 
 elements.gmail.addEventListener('click', async () => {
@@ -332,13 +358,28 @@ for (const filter of [elements.workModel, elements.vacancyStatus, elements.score
   filter.addEventListener('change', applyFilters);
 }
 for (const tab of elements.evaluationTabs) {
+  tab.addEventListener('keydown', event => {
+    const tabs = [...elements.evaluationTabs];
+    const position = tabs.indexOf(tab);
+    let next;
+    if (event.key === 'ArrowRight') next = (position + 1) % tabs.length;
+    if (event.key === 'ArrowLeft') next = (position + tabs.length - 1) % tabs.length;
+    if (event.key === 'Home') next = 0;
+    if (event.key === 'End') next = tabs.length - 1;
+    if (next === undefined) return;
+    event.preventDefault();
+    tabs[next].focus();
+    tabs[next].click();
+  });
   tab.addEventListener('click', () => {
     selectedEvaluation = tab.dataset.evaluationTab;
+    elements.vacancies.setAttribute('aria-labelledby', tab.id);
     elements.vacanciesHeading.textContent = ({ PENDENTE:'Vagas encontradas', GOSTEI:'Vagas compatíveis', NAO_GOSTEI:'Vagas não compatíveis' })[selectedEvaluation];
     elements.evaluationTabs.forEach(item => {
       const active = item === tab;
       item.classList.toggle('is-active', active);
       item.setAttribute('aria-selected', String(active));
+      item.tabIndex = active ? 0 : -1;
     });
     applyFilters();
   });

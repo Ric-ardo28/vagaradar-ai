@@ -9,12 +9,12 @@
   <link rel="stylesheet" href="/css/app.css">
 </head>
 <body class="login-page">
-  <main class="login-card">
+  <main class="login-card" aria-labelledby="login-heading">
     <a class="brand" href="/login" aria-label="VagaRadar AI"><img class="brand-logo" src="/images/vagaradar-logo.png" alt="VagaRadar AI"></a>
-    <p class="eyebrow">ACESSO PESSOAL</p>
-    <h1>Entre no seu painel.</h1>
-    <p class="login-copy">Este painel contém suas vagas, análises e conexão Gmail.</p>
-    <p id="login-error" class="error login-error" hidden>Usuário ou senha inválidos.</p>
+    <p class="eyebrow">Seu espaço pessoal</p>
+    <h1 id="login-heading">Seu próximo passo<br>começa aqui.</h1>
+    <p class="login-copy">Entre para acompanhar suas vagas, revisar análises e organizar suas oportunidades.</p>
+    <p id="login-error" class="error login-error" role="alert" hidden>Usuário ou senha inválidos.</p>
     <p id="login-session-renewed" class="error login-error" hidden>Sua sessão foi renovada após a atualização. Entre novamente.</p>
     <form id="login-form" method="post" action="/login">
       <input type="hidden" id="csrf-token" name="_csrf">
@@ -22,6 +22,7 @@
       <label>Senha<input name="password" type="password" autocomplete="current-password" required></label>
       <button class="button button-dark login-submit" type="submit">Entrar com segurança</button>
     </form>
+    <p class="login-footer">Acesso pessoal · VagaRadar AI</p>
   </main>
   <script src="/js/login.js" defer></script>
 </body>

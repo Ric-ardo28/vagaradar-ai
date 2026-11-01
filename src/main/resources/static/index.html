@@ -8,30 +8,38 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="stylesheet" href="/css/app.css">
 </head>
-<body>
+<body class="dashboard-page">
+  <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+  <aside class="sidebar" id="app-navigation" aria-label="Menu principal">
+    <a class="brand sidebar-brand" href="/" aria-label="VagaRadar AI, início"><img class="brand-logo" src="/images/vagaradar-logo.png" alt="VagaRadar AI"></a>
+    <p class="nav-label">Seu espaço de oportunidades</p>
+    <nav class="sidebar-nav" aria-label="Navegação principal">
+      <a class="nav-item is-active" href="#main-content" aria-current="location"><svg class="icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path fill="currentColor" d="M104,40H56A16,16,0,0,0,40,56v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,104,40Zm0,64H56V56h48v48Zm96-64H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm0,64H152V56h48v48Zm-96,32H56a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,104,136Zm0,64H56V152h48v48Zm96-64H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,200,136Zm0,64H152V152h48v48Z"/></svg><span>Visão geral</span></a>
+      <a class="nav-item" href="#opportunities"><svg class="icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path fill="currentColor" d="M216,56H176V48a24,24,0,0,0-24-24H104A24,24,0,0,0,80,48v8H40A16,16,0,0,0,24,72V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V72A16,16,0,0,0,216,56ZM96,48a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96ZM216,72v41.61A184,184,0,0,1,128,136a184.07,184.07,0,0,1-88-22.38V72Zm0,128H40V131.64A200.19,200.19,0,0,0,128,152a200.25,200.25,0,0,0,88-20.37V200ZM104,112a8,8,0,0,1,8-8h32a8,8,0,0,1,0,16H112A8,8,0,0,1,104,112Z"/></svg><span>Oportunidades</span></a>
+      <a class="nav-item" href="#integrations"><svg class="icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path fill="currentColor" d="M237.66,18.34a8,8,0,0,0-11.32,0l-52.4,52.41-5.37-5.38a32.05,32.05,0,0,0-45.26,0L100,88.69l-6.34-6.35A8,8,0,0,0,82.34,93.66L88.69,100,65.37,123.31a32,32,0,0,0,0,45.26l5.38,5.37-52.41,52.4a8,8,0,0,0,11.32,11.32l52.4-52.41,5.37,5.38a32,32,0,0,0,45.26,0L156,167.31l6.34,6.35a8,8,0,0,0,11.32-11.32L167.31,156l23.32-23.31a32,32,0,0,0,0-45.26l-5.38-5.37,52.41-52.4A8,8,0,0,0,237.66,18.34Zm-116.29,161a16,16,0,0,1-22.62,0L76.69,157.25a16,16,0,0,1,0-22.62L100,111.31,144.69,156Zm57.94-57.94L156,144.69,111.31,100l23.32-23.31a16,16,0,0,1,22.62,0l22.06,22A16,16,0,0,1,179.31,121.37ZM88.57,35A8,8,0,0,1,103.43,29l8,20A8,8,0,0,1,96.57,55ZM24.57,93A8,8,0,0,1,35,88.57l20,8A8,8,0,0,1,49,111.43l-20-8A8,8,0,0,1,24.57,93ZM231.43,163a8,8,0,0,1-10.4,4.46l-20-8A8,8,0,1,1,207,144.57l20,8A8,8,0,0,1,231.43,163Zm-64,58.06A8,8,0,0,1,152.57,227l-8-20A8,8,0,0,1,159.43,201Z"/></svg><span>Integrações</span></a>
+    </nav>
+    <div class="sidebar-note"><span class="radar-mark" aria-hidden="true"></span><strong>Seu próximo passo começa aqui.</strong><p>Organize suas vagas e escolha onde vale a pena se candidatar.</p></div>
+    <div class="sidebar-footer"><span class="account-avatar" aria-hidden="true"><svg class="icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path fill="currentColor" d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-59.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,131.52,0Z"/></svg></span><div><strong>Espaço pessoal</strong><small>VagaRadar AI</small></div></div>
+  </aside>
   <header class="topbar">
-    <a class="brand" href="/" aria-label="VagaRadar AI, início">
-      <img class="brand-logo" src="/images/vagaradar-logo.png" alt="VagaRadar AI">
-    </a>
+<div class="topbar-context"><button id="menu-toggle" class="icon-button menu-toggle" type="button" aria-label="Abrir menu" aria-controls="app-navigation" aria-expanded="false"><svg class="icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path fill="currentColor" d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg></button><span class="topbar-product">VagaRadar AI</span><span class="topbar-divider" aria-hidden="true">/</span><span>Visão geral</span></div>
     <div class="topbar-actions">
-      <button class="button button-secondary" id="profile-button" type="button">Meu perfil</button>
-      <button class="button button-secondary" id="refresh-button" type="button">Atualizar vagas</button>
+      <button class="button button-secondary" id="profile-button" type="button"><svg class="icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path fill="currentColor" d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-59.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,131.52,0Z"/></svg>Meu perfil</button>
+      <button class="button button-secondary" id="refresh-button" type="button"><svg class="icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path fill="currentColor" d="M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1,0-16H211.4L184.81,71.64l-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,0,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60L224,85.8V56a8,8,0,1,1,16,0Z"/></svg>Atualizar vagas</button>
     </div>
   </header>
 
-  <main class="page-content">
+  <main class="page-content" id="main-content" tabindex="-1">
     <section class="hero">
       <div class="hero-intro">
-        <p class="eyebrow">SEU RADAR DE OPORTUNIDADES</p>
-        <h1>Encontre a próxima<br><span>vaga certa</span> para você.</h1>
-        <p class="hero-copy">Centralize seus alertas do LinkedIn, analise oportunidades com IA e descubra onde vale a pena se candidatar.</p>
-        <div class="hero-highlights" aria-label="Benefícios do VagaRadar AI">
-          <span>Alertas organizados</span><span>Análise com IA</span><span>Envio ao Discord</span>
-        </div>
+        <p class="eyebrow">Seu radar de oportunidades</p>
+        <h1>Menos buscas.<br><span>Mais possibilidades.</span></h1>
+        <p class="hero-copy">Suas vagas, organizadas. Sua próxima oportunidade, mais perto. Analise e escolha o que faz sentido para você.</p>
+        <div class="hero-highlights" aria-label="Benefícios do VagaRadar AI"><span><svg class="icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg>Alertas organizados</span><span><svg class="icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M215.79,118.17a8,8,0,0,0-5-5.66L153.18,90.9l14.66-73.33a8,8,0,0,0-13.69-7l-112,120a8,8,0,0,0,3,13l57.63,21.61L88.16,238.43a8,8,0,0,0,13.69,7l112-120A8,8,0,0,0,215.79,118.17ZM109.37,214l10.47-52.38a8,8,0,0,0-5-9.06L62,132.71l84.62-90.66L136.16,94.43a8,8,0,0,0,5,9.06l52.8,19.8Z"/></svg>Análise com IA</span><span>Envio ao Discord</span></div>
       </div>
-      <aside class="integration-panel" aria-label="Central de automação">
+      <aside id="integrations" class="integration-panel" aria-label="Central de automação">
         <div class="panel-heading">
-          <span class="panel-icon" aria-hidden="true">V</span>
+          <span class="panel-icon" aria-hidden="true"><svg class="icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path fill="currentColor" d="M237.66,18.34a8,8,0,0,0-11.32,0l-52.4,52.41-5.37-5.38a32.05,32.05,0,0,0-45.26,0L100,88.69l-6.34-6.35A8,8,0,0,0,82.34,93.66L88.69,100,65.37,123.31a32,32,0,0,0,0,45.26l5.38,5.37-52.41,52.4a8,8,0,0,0,11.32,11.32l52.4-52.41,5.37,5.38a32,32,0,0,0,45.26,0L156,167.31l6.34,6.35a8,8,0,0,0,11.32-11.32L167.31,156l23.32-23.31a32,32,0,0,0,0-45.26l-5.38-5.37,52.41-52.4A8,8,0,0,0,237.66,18.34Zm-116.29,161a16,16,0,0,1-22.62,0L76.69,157.25a16,16,0,0,1,0-22.62L100,111.31,144.69,156Zm57.94-57.94L156,144.69,111.31,100l23.32-23.31a16,16,0,0,1,22.62,0l22.06,22A16,16,0,0,1,179.31,121.37ZM88.57,35A8,8,0,0,1,103.43,29l8,20A8,8,0,0,1,96.57,55ZM24.57,93A8,8,0,0,1,35,88.57l20,8A8,8,0,0,1,49,111.43l-20-8A8,8,0,0,1,24.57,93ZM231.43,163a8,8,0,0,1-10.4,4.46l-20-8A8,8,0,1,1,207,144.57l20,8A8,8,0,0,1,231.43,163Zm-64,58.06A8,8,0,0,1,152.57,227l-8-20A8,8,0,0,1,159.43,201Z"/></svg></span>
           <div><strong>Central de automação</strong><small>Seu fluxo de vagas em um só lugar</small></div>
         </div>
         <div class="hero-actions">
@@ -52,18 +60,18 @@
       <article><small>Próxima ação</small><span id="new-count">0</span><em>aguardando análise</em></article>
     </section>
 
-    <section class="vacancies-section">
+    <section class="vacancies-section" id="opportunities" aria-labelledby="vacancies-heading">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">OPORTUNIDADES</p>
+          <p class="eyebrow">Sua próxima oportunidade</p>
           <h2 id="vacancies-heading">Vagas encontradas</h2>
         </div>
         <p id="status-message" class="status-message" role="status">Carregando vagas...</p>
       </div>
       <div class="evaluation-tabs" role="tablist" aria-label="Sua triagem de vagas">
-        <button class="evaluation-tab is-active" data-evaluation-tab="PENDENTE" type="button" role="tab" aria-selected="true">Vagas encontradas <span id="pending-evaluation-count">0</span></button>
-        <button class="evaluation-tab" data-evaluation-tab="GOSTEI" type="button" role="tab" aria-selected="false"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h3Z"></path><path d="M7 22h9.3a2 2 0 0 0 1.9-1.37l2.43-7A2 2 0 0 0 18.74 11H14l.72-4.32A2.4 2.4 0 0 0 12.35 4L7 10Z"></path></svg> Compatíveis <span id="liked-count">0</span></button>
-        <button class="evaluation-tab" data-evaluation-tab="NAO_GOSTEI" type="button" role="tab" aria-selected="false"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14V2H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3Z"></path><path d="M7 2h9.3a2 2 0 0 1 1.9 1.37l2.43 7A2 2 0 0 1 18.74 13H14l.72 4.32A2.4 2.4 0 0 1 12.35 20L7 14Z"></path></svg> Não compatíveis <span id="disliked-count">0</span></button>
+        <button class="evaluation-tab is-active" id="evaluation-pending" aria-controls="vacancies" data-evaluation-tab="PENDENTE" type="button" role="tab" aria-selected="true">Vagas encontradas <span id="pending-evaluation-count">0</span></button>
+        <button class="evaluation-tab" id="evaluation-liked" aria-controls="vacancies" tabindex="-1" data-evaluation-tab="GOSTEI" type="button" role="tab" aria-selected="false"><svg class="icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path fill="currentColor" d="M234,80.12A24,24,0,0,0,216,72H160V56a40,40,0,0,0-40-40,8,8,0,0,0-7.16,4.42L75.06,96H32a16,16,0,0,0-16,16v88a16,16,0,0,0,16,16H204a24,24,0,0,0,23.82-21l12-96A24,24,0,0,0,234,80.12ZM32,112H72v88H32ZM223.94,97l-12,96a8,8,0,0,1-7.94,7H88V105.89l36.71-73.43A24,24,0,0,1,144,56V80a8,8,0,0,0,8,8h64a8,8,0,0,1,7.94,9Z"/></svg> Compatíveis <span id="liked-count">0</span></button>
+        <button class="evaluation-tab" id="evaluation-disliked" aria-controls="vacancies" tabindex="-1" data-evaluation-tab="NAO_GOSTEI" type="button" role="tab" aria-selected="false"><svg class="icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path fill="currentColor" d="M239.82,157l-12-96A24,24,0,0,0,204,40H32A16,16,0,0,0,16,56v88a16,16,0,0,0,16,16H75.06l37.78,75.58A8,8,0,0,0,120,240a40,40,0,0,0,40-40V184h56a24,24,0,0,0,23.82-27ZM72,144H32V56H72Zm150,21.29a7.88,7.88,0,0,1-6,2.71H152a8,8,0,0,0-8,8v24a24,24,0,0,1-19.29,23.54L88,150.11V56H204a8,8,0,0,1,7.94,7l12,96A7.87,7.87,0,0,1,222,165.29Z"/></svg> Não compatíveis <span id="disliked-count">0</span></button>
       </div>
       <div class="filters" aria-label="Filtros de vagas">
         <label><span>Buscar</span><input id="search-filter" type="search" placeholder="Cargo ou empresa"></label>
@@ -71,7 +79,7 @@
         <label><span>Status</span><select id="status-filter"><option value="">Todos</option><option value="RECEBIDA">Aguardando análise</option><option value="ANALISADA">Analisada</option><option value="DESCARTADA">Descartada</option></select></label>
         <label><span>Nota mínima</span><select id="score-filter"><option value="">Qualquer nota</option><option value="70">70+</option><option value="80">80+</option><option value="90">90+</option></select></label>
       </div>
-      <div id="vacancies" class="vacancies" aria-live="polite"></div>
+      <div id="vacancies" class="vacancies" role="tabpanel" aria-labelledby="evaluation-pending" tabindex="0"></div>
       <nav id="pagination" class="pagination" aria-label="Paginação das vagas" hidden>
         <button id="previous-page" class="pagination-button" type="button">Anterior</button>
         <p id="pagination-summary" class="pagination-summary"></p>
@@ -80,16 +88,16 @@
     </section>
   </main>
 
-  <dialog id="analysis-dialog" class="analysis-dialog">
-    <button id="dialog-close" class="dialog-close" type="button" aria-label="Fechar">×</button>
+  <dialog aria-labelledby="analysis-title" id="analysis-dialog" class="analysis-dialog">
+    <button id="dialog-close" class="dialog-close" type="button" aria-label="Fechar"><svg class="icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path fill="currentColor" d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg></button>
     <div id="analysis-content"></div>
   </dialog>
 
-  <dialog id="evaluation-dialog" class="evaluation-dialog">
-    <button id="evaluation-dialog-close" class="dialog-close" type="button" aria-label="Fechar">×</button>
+  <dialog aria-labelledby="evaluation-title" id="evaluation-dialog" class="evaluation-dialog">
+    <button id="evaluation-dialog-close" class="dialog-close" type="button" aria-label="Fechar"><svg class="icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path fill="currentColor" d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg></button>
     <form id="evaluation-form">
       <p class="eyebrow">SUA AVALIAÇÃO</p>
-      <h2>Por que não combinou?</h2>
+      <h2 id="evaluation-title">Por que não combinou?</h2>
       <p class="profile-mode">Escolha quantos motivos quiser. Isso é opcional e fica salvo para análises futuras.</p>
       <div class="reason-options">
         <label><input type="checkbox" name="reason" value="INGLES_AVANCADO"> Inglês avançado</label>
@@ -116,10 +124,10 @@
     </form>
   </dialog>
 
-  <dialog id="profile-dialog" class="profile-dialog">
-    <button id="profile-dialog-close" class="dialog-close" type="button" aria-label="Fechar">×</button>
+  <dialog aria-labelledby="profile-title" id="profile-dialog" class="profile-dialog">
+    <button id="profile-dialog-close" class="dialog-close" type="button" aria-label="Fechar"><svg class="icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path fill="currentColor" d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg></button>
     <p class="eyebrow">PERFIL PROFISSIONAL</p>
-    <h2>Perfil usado nas análises</h2>
+    <h2 id="profile-title">Perfil usado nas análises</h2>
     <p id="profile-mode" class="profile-mode" role="status"></p>
     <form id="profile-form" class="profile-form">
       <label>Objetivo<textarea id="profile-objetivo" required maxlength="3000"></textarea></label>
@@ -138,12 +146,13 @@
 
   <template id="empty-state-template">
     <div class="empty-state">
-      <div class="empty-icon">⌁</div>
+      <div class="empty-icon" aria-hidden="true"><svg class="icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path fill="currentColor" d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"/></svg></div>
       <h3>Nenhuma vaga por enquanto</h3>
       <p>Conecte o Gmail e use “Buscar e analisar agora” para importar seus alertas do LinkedIn.</p>
     </div>
   </template>
 
+  <script src="/js/navigation.js" defer></script>
   <script src="/js/app.js" defer></script>
 </body>
 </html>
